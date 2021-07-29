@@ -1,0 +1,196 @@
+#=GENOME_DIFF	1.0
+#=CREATED	20:50:46 26 Jul 2021
+#=PROGRAM	breseq 0.32.0 revision 6ff6de7d1b87
+#=COMMAND	breseq -j 8 -p -o breseq_20 -r /N/project/Bifidobacterium/BB12_Jensen_2021.gb ../Sample_20/Sample_20_R1_trimmed.fastq ../Sample_20/Sample_20_R2_trimmed.fastq
+#=REFSEQ	/N/project/Bifidobacterium/BB12_Jensen_2021.gb
+#=READSEQ	../Sample_20/Sample_20_R1_trimmed.fastq
+#=READSEQ	../Sample_20/Sample_20_R2_trimmed.fastq
+#=CONVERTED-BASES	174162752
+#=CONVERTED-READS	5442586
+#=INPUT-BASES	174236544
+#=INPUT-READS	5444892
+#=MAPPED-BASES	172215972
+#=MAPPED-READS	5386257
+DEL	1	45,50	CP001853	146344	1132	frequency=1
+DEL	2	24	CP001853	159401	1	frequency=1	repeat_length=1	repeat_new_copies=8	repeat_ref_copies=9	repeat_seq=G
+SNP	3	25	CP001853	281241	C	frequency=1
+SNP	4	26	CP001853	505407	T	frequency=1.42245770e-01
+DEL	5	27	CP001853	588866	1	frequency=1	repeat_length=1	repeat_new_copies=4	repeat_ref_copies=5	repeat_seq=G
+SNP	6	28	CP001853	775511	T	frequency=7.14145184e-01
+SNP	7	29	CP001853	776910	A	frequency=1
+SNP	8	30	CP001853	793539	G	frequency=6.28026962e-01
+SNP	9	31	CP001853	839297	C	frequency=1
+DEL	10	32	CP001853	951836	1	frequency=8.78787041e-01
+SNP	11	33	CP001853	959923	A	frequency=1
+SNP	12	34	CP001853	1156635	A	frequency=5.62825203e-02
+SNP	13	35	CP001853	1305547	C	frequency=5.62525272e-01
+SNP	14	36	CP001853	1305560	C	frequency=5.19313812e-01
+DEL	15	46,58	CP001853	1437318	100	frequency=1
+SNP	16	37	CP001853	1438465	A	frequency=1
+SNP	17	38	CP001853	1438615	G	frequency=1
+DEL	18	39	CP001853	1493541	1	frequency=1	repeat_length=1	repeat_new_copies=9	repeat_ref_copies=10	repeat_seq=C
+SNP	19	40	CP001853	1518034	G	frequency=9.09667015e-02
+SNP	20	41	CP001853	1637790	C	frequency=1
+SNP	21	42	CP001853	1767106	C	frequency=1.44790173e-01
+SNP	22	43	CP001853	1779181	C	frequency=1
+SNP	23	44	CP001853	1886507	C	frequency=1
+RA	24	.	CP001853	159393	0	G	.	bias_e_value=1943290	bias_p_value=0.999558	consensus_score=133.0	fisher_strand_p_value=1	frequency=1	ks_quality_p_value=0.970409	major_base=.	major_cov=34/13	major_frequency=9.21568394e-01	minor_base=G	minor_cov=3/1	new_cov=34/13	polymorphism_frequency=9.21568394e-01	polymorphism_reject=VARIANT_STRAND_COVERAGE,INDEL_HOMOPOLYMER	polymorphism_score=15.4	prediction=consensus	ref_cov=3/1	total_cov=37/14
+RA	25	.	CP001853	281241	0	T	C	consensus_score=211.7	frequency=1	major_base=C	major_cov=12/54	major_frequency=1.00000000e+00	minor_base=N	minor_cov=0/0	new_cov=12/54	polymorphism_frequency=1.00000000e+00	polymorphism_reject=FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=NA	prediction=consensus	ref_cov=0/0	total_cov=12/54
+RA	26	.	CP001853	505407	0	G	T	bias_e_value=1505350	bias_p_value=0.774296	consensus_score=171.9	fisher_strand_p_value=0.45397	frequency=1.42245770e-01	ks_quality_p_value=0.900037	major_base=G	major_cov=20/27	major_frequency=8.57754230e-01	minor_base=T	minor_cov=2/6	new_cov=2/6	polymorphism_frequency=1.42245770e-01	polymorphism_score=18.0	prediction=polymorphism	ref_cov=20/27	total_cov=22/33
+RA	27	.	CP001853	588862	0	G	.	consensus_score=258.3	frequency=1	major_base=.	major_cov=29/35	major_frequency=1.00000000e+00	minor_base=N	minor_cov=0/0	new_cov=29/35	polymorphism_frequency=1.00000000e+00	polymorphism_reject=FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=NA	prediction=consensus	ref_cov=0/0	total_cov=29/35
+RA	28	.	CP001853	775511	0	G	T	bias_e_value=1858700	bias_p_value=0.956048	consensus_score=70.3	fisher_strand_p_value=0.760816	frequency=7.14145184e-01	ks_quality_p_value=0.944459	major_base=T	major_cov=24/16	major_frequency=7.14145184e-01	minor_base=G	minor_cov=11/5	new_cov=24/16	polymorphism_frequency=7.14145184e-01	polymorphism_score=54.7	prediction=polymorphism	ref_cov=11/5	total_cov=35/21
+RA	29	.	CP001853	776910	0	C	A	bias_e_value=1944150	bias_p_value=1	consensus_score=130.9	fisher_strand_p_value=1	frequency=1	ks_quality_p_value=1	major_base=A	major_cov=22/22	major_frequency=9.97293472e-01	minor_base=C	minor_cov=1/0	new_cov=22/22	polymorphism_frequency=9.97293472e-01	polymorphism_reject=SCORE_CUTOFF,FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=-6.8	prediction=consensus	ref_cov=1/0	total_cov=23/22
+RA	30	.	CP001853	793539	0	A	G	bias_e_value=1279790	bias_p_value=0.658275	consensus_score=72.3	fisher_strand_p_value=0.313385	frequency=6.28026962e-01	ks_quality_p_value=0.949582	major_base=G	major_cov=42/12	major_frequency=6.28026962e-01	minor_base=A	minor_cov=21/11	new_cov=42/12	polymorphism_frequency=6.28026962e-01	polymorphism_score=98.4	prediction=polymorphism	ref_cov=21/11	total_cov=64/23
+RA	31	.	CP001853	839297	0	T	C	bias_e_value=1944150	bias_p_value=1	consensus_score=158.3	fisher_strand_p_value=1	frequency=1	ks_quality_p_value=1	major_base=C	major_cov=12/39	major_frequency=9.89837646e-01	minor_base=A	minor_cov=0/1	new_cov=12/39	polymorphism_frequency=9.89837646e-01	polymorphism_reject=SCORE_CUTOFF,FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=-6.0	prediction=consensus	ref_cov=0/0	total_cov=12/40
+RA	32	.	CP001853	951836	0	A	.	bias_e_value=1871940	bias_p_value=0.962854	consensus_score=70.5	fisher_strand_p_value=1	frequency=8.78787041e-01	ks_quality_p_value=0.740122	major_base=.	major_cov=14/15	major_frequency=8.78787041e-01	minor_base=A	minor_cov=2/2	new_cov=14/15	polymorphism_frequency=8.78787041e-01	polymorphism_score=18.0	prediction=polymorphism	ref_cov=2/2	total_cov=16/17
+RA	33	.	CP001853	959923	0	G	A	consensus_score=113.6	frequency=1	major_base=A	major_cov=7/25	major_frequency=1.00000000e+00	minor_base=N	minor_cov=0/0	new_cov=7/25	polymorphism_frequency=1.00000000e+00	polymorphism_reject=FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=NA	prediction=consensus	ref_cov=0/0	total_cov=7/25
+RA	34	.	CP001853	1156635	0	T	A	bias_e_value=1943930	bias_p_value=0.999887	consensus_score=258.5	fisher_strand_p_value=1	frequency=5.62825203e-02	ks_quality_p_value=0.984978	major_base=T	major_cov=28/39	major_frequency=9.43717480e-01	minor_base=A	minor_cov=2/2	new_cov=2/2	polymorphism_frequency=5.62825203e-02	polymorphism_score=4.9	prediction=polymorphism	ref_cov=28/39	total_cov=30/41
+RA	35	.	CP001853	1305547	0	T	C	bias_e_value=26887.5	bias_p_value=0.01383	consensus_score=18.5	fisher_strand_p_value=0.00216747	frequency=5.62525272e-01	ks_quality_p_value=0.878421	major_base=C	major_cov=25/2	major_frequency=5.62525272e-01	minor_base=T	minor_cov=11/10	new_cov=25/2	polymorphism_frequency=5.62525272e-01	polymorphism_score=64.6	prediction=polymorphism	ref_cov=11/10	total_cov=36/12
+RA	36	.	CP001853	1305560	0	G	C	bias_e_value=20269.9	bias_p_value=0.0104261	consensus_score=3.3	fisher_strand_p_value=0.00140856	frequency=5.19313812e-01	ks_quality_p_value=0.975185	major_base=C	major_cov=25/2	major_frequency=5.19313812e-01	minor_base=G	minor_cov=13/12	new_cov=25/2	polymorphism_frequency=5.19313812e-01	polymorphism_score=91.7	prediction=polymorphism	ref_cov=13/12	total_cov=38/14
+RA	37	.	CP001853	1438465	0	G	A	consensus_score=224.7	frequency=1	major_base=A	major_cov=13/48	major_frequency=1.00000000e+00	minor_base=N	minor_cov=0/0	new_cov=13/48	polymorphism_frequency=1.00000000e+00	polymorphism_reject=FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=NA	prediction=consensus	ref_cov=0/0	total_cov=13/48
+RA	38	.	CP001853	1438615	0	T	G	bias_e_value=1607680	bias_p_value=0.826932	consensus_score=149.1	fisher_strand_p_value=0.477273	frequency=1	ks_quality_p_value=0.990531	major_base=G	major_cov=23/20	major_frequency=9.77297783e-01	minor_base=T	minor_cov=0/1	new_cov=23/20	polymorphism_frequency=9.77297783e-01	polymorphism_reject=SCORE_CUTOFF,FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=-3.0	prediction=consensus	ref_cov=0/1	total_cov=23/21
+RA	39	.	CP001853	1493532	0	C	.	bias_e_value=233752	bias_p_value=0.120234	consensus_score=34.8	fisher_strand_p_value=0.02582	frequency=1	ks_quality_p_value=1	major_base=.	major_cov=1/23	major_frequency=6.85712337e-01	minor_base=C	minor_cov=4/7	new_cov=1/23	polymorphism_frequency=6.85712337e-01	polymorphism_reject=VARIANT_STRAND_COVERAGE,INDEL_HOMOPOLYMER	polymorphism_score=59.3	prediction=consensus	ref_cov=4/7	total_cov=5/30
+RA	40	.	CP001853	1518034	0	C	G	bias_e_value=1295070	bias_p_value=0.666136	consensus_score=222.6	fisher_strand_p_value=0.388739	frequency=9.09667015e-02	ks_quality_p_value=0.782349	major_base=C	major_cov=24/36	major_frequency=9.09033298e-01	minor_base=G	minor_cov=4/2	new_cov=4/2	polymorphism_frequency=9.09667015e-02	polymorphism_score=14.0	prediction=polymorphism	ref_cov=24/36	total_cov=28/38
+RA	41	.	CP001853	1637790	0	T	C	consensus_score=286.2	frequency=1	major_base=C	major_cov=51/31	major_frequency=1.00000000e+00	minor_base=N	minor_cov=0/0	new_cov=51/31	polymorphism_frequency=1.00000000e+00	polymorphism_reject=FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=NA	prediction=consensus	ref_cov=0/0	total_cov=51/31
+RA	42	.	CP001853	1767106	0	T	C	bias_e_value=1944150	bias_p_value=1	consensus_score=262.2	fisher_strand_p_value=1	frequency=1.44790173e-01	ks_quality_p_value=1	major_base=T	major_cov=56/26	major_frequency=8.55209827e-01	minor_base=C	minor_cov=10/4	new_cov=10/4	polymorphism_frequency=1.44790173e-01	polymorphism_score=30.5	prediction=polymorphism	ref_cov=56/26	total_cov=66/31
+RA	43	.	CP001853	1779181	0	T	C	bias_e_value=1928980	bias_p_value=0.992198	consensus_score=156.6	fisher_strand_p_value=1	frequency=1	ks_quality_p_value=0.877714	major_base=C	major_cov=17/29	major_frequency=9.38853264e-01	minor_base=T	minor_cov=1/2	new_cov=17/29	polymorphism_frequency=9.38853264e-01	polymorphism_reject=VARIANT_STRAND_COVERAGE	polymorphism_score=2.1	prediction=consensus	ref_cov=1/2	total_cov=18/31
+RA	44	.	CP001853	1886507	0	T	C	consensus_score=378.8	frequency=1	major_base=C	major_cov=55/47	major_frequency=1.00000000e+00	minor_base=N	minor_cov=0/0	new_cov=55/47	polymorphism_frequency=1.00000000e+00	polymorphism_reject=FREQUENCY_CUTOFF,VARIANT_STRAND_COVERAGE	polymorphism_score=NA	prediction=consensus	ref_cov=0/0	total_cov=55/47
+MC	45	.	CP001853	146344	147475	0	0	left_inside_cov=0	left_outside_cov=128	right_inside_cov=0	right_outside_cov=124
+MC	46	.	CP001853	1437318	1437417	0	0	left_inside_cov=0	left_outside_cov=50	right_inside_cov=0	right_outside_cov=63
+JC	47	.	CP001853	1	1	CP001853	1944152	-1	0	alignment_overlap=0	circular_chromosome=1	coverage_minus=23	coverage_plus=27	flanking_left=32	flanking_right=32	frequency=1	junction_possible_overlap_registers=21	key=CP001853__1__1__CP001853__1944152__-1__0____32__32__0__0	max_left=26	max_left_minus=26	max_left_plus=24	max_min_left=15	max_min_left_minus=13	max_min_left_plus=15	max_min_right=16	max_min_right_minus=16	max_min_right_plus=15	max_pos_hash_score=42	max_right=25	max_right_minus=25	max_right_plus=21	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.86	new_junction_read_count=50	polymorphism_frequency=1.00000000e+00	pos_hash_score=19	prediction=consensus	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.00	side_1_overlap=0	side_1_possible_overlap_registers=21	side_1_read_count=0	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.00	side_2_overlap=0	side_2_possible_overlap_registers=21	side_2_read_count=0	side_2_redundant=0	total_non_overlap_reads=50
+JC	48	.	CP001853	72948	1	CP001853	90505	-1	0	alignment_overlap=3	coverage_minus=4	coverage_plus=0	flanking_left=32	flanking_right=32	frequency=1.24076809e-01	junction_possible_overlap_registers=18	key=CP001853__72948__1__CP001853__90508__-1__3____32__32__0__0	max_left=22	max_left_minus=22	max_left_plus=0	max_min_left=0	max_min_left_minus=0	max_min_left_plus=0	max_min_right=10	max_min_right_minus=10	max_min_right_plus=0	max_pos_hash_score=36	max_right=10	max_right_minus=10	max_right_plus=0	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.12	new_junction_read_count=6	polymorphism_frequency=1.24076809e-01	pos_hash_score=3	prediction=polymorphism	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.52	side_1_overlap=3	side_1_possible_overlap_registers=21	side_1_read_count=30	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=1.19	side_2_overlap=0	side_2_possible_overlap_registers=18	side_2_read_count=59	side_2_redundant=0	total_non_overlap_reads=4
+JC	49	.	CP001853	93569	1	CP001853	291560	1	0	alignment_overlap=3	coverage_minus=9	coverage_plus=0	flanking_left=32	flanking_right=32	frequency=2.65654649e-01	junction_possible_overlap_registers=18	key=CP001853__93569__1__CP001853__291557__1__3____32__32__0__0	max_left=23	max_left_minus=23	max_left_plus=0	max_min_left=0	max_min_left_minus=0	max_min_left_plus=0	max_min_right=10	max_min_right_minus=10	max_min_right_plus=0	max_pos_hash_score=36	max_right=10	max_right_minus=10	max_right_plus=0	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.20	new_junction_read_count=10	polymorphism_frequency=2.65654649e-01	pos_hash_score=5	prediction=polymorphism	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.81	side_1_overlap=3	side_1_possible_overlap_registers=21	side_1_read_count=47	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.30	side_2_overlap=0	side_2_possible_overlap_registers=18	side_2_read_count=15	side_2_redundant=0	total_non_overlap_reads=9
+JC	50	.	CP001853	146343	-1	CP001853	147476	1	0	alignment_overlap=1	coverage_minus=25	coverage_plus=58	flanking_left=32	flanking_right=32	frequency=1	junction_possible_overlap_registers=20	key=CP001853__146343__-1__CP001853__147475__1__1____32__32__0__0	max_left=25	max_left_minus=23	max_left_plus=25	max_min_left=15	max_min_left_minus=15	max_min_left_plus=15	max_min_right=14	max_min_right_minus=14	max_min_right_plus=14	max_pos_hash_score=40	max_right=25	max_right_minus=23	max_right_plus=25	neg_log10_pos_hash_p_value=NT	new_junction_coverage=1.55	new_junction_read_count=86	polymorphism_frequency=1.00000000e+00	pos_hash_score=16	prediction=consensus	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.00	side_1_overlap=1	side_1_possible_overlap_registers=21	side_1_read_count=0	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.00	side_2_overlap=0	side_2_possible_overlap_registers=20	side_2_read_count=0	side_2_redundant=0	total_non_overlap_reads=83
+JC	51	.	CP001853	291557	1	CP001853	1844477	-1	0	alignment_overlap=3	coverage_minus=0	coverage_plus=11	flanking_left=32	flanking_right=32	frequency=3.89721627e-01	junction_possible_overlap_registers=18	key=CP001853__291557__1__CP001853__1844480__-1__3____32__32__0__0	max_left=12	max_left_minus=0	max_left_plus=12	max_min_left=12	max_min_left_minus=0	max_min_left_plus=12	max_min_right=0	max_min_right_minus=0	max_min_right_plus=0	max_pos_hash_score=36	max_right=22	max_right_minus=0	max_right_plus=22	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.26	new_junction_read_count=13	polymorphism_frequency=3.89721627e-01	pos_hash_score=3	prediction=polymorphism	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.28	side_1_overlap=3	side_1_possible_overlap_registers=21	side_1_read_count=16	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.54	side_2_overlap=0	side_2_possible_overlap_registers=18	side_2_read_count=27	side_2_redundant=0	total_non_overlap_reads=11
+JC	52	.	CP001853	291557	1	CP001853	1937105	1	0	alignment_overlap=4	coverage_minus=0	coverage_plus=6	flanking_left=32	flanking_right=32	frequency=2.07066557e-01	junction_possible_overlap_registers=17	key=CP001853__291557__1__CP001853__1937101__1__4____32__32__0__0	max_left=10	max_left_minus=0	max_left_plus=10	max_min_left=10	max_min_left_minus=0	max_min_left_plus=10	max_min_right=0	max_min_right_minus=0	max_min_right_plus=0	max_pos_hash_score=34	max_right=21	max_right_minus=0	max_right_plus=21	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.13	new_junction_read_count=6	polymorphism_frequency=2.07066557e-01	pos_hash_score=3	prediction=polymorphism	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.28	side_1_overlap=4	side_1_possible_overlap_registers=21	side_1_read_count=16	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.70	side_2_overlap=0	side_2_possible_overlap_registers=17	side_2_read_count=33	side_2_redundant=0	total_non_overlap_reads=6
+JC	53	.	CP001853	607832	-1	CP001853	1517099	-1	-5	alignment_overlap=-5	coverage_minus=4	coverage_plus=12	flanking_left=32	flanking_right=32	frequency=3.00000000e-01	junction_possible_overlap_registers=16	key=CP001853__607832__-1__CP001853__1517099__-1__-5__TGAGA__32__32__0__1	max_left=14	max_left_minus=11	max_left_plus=14	max_min_left=13	max_min_left_minus=11	max_min_left_plus=13	max_min_right=13	max_min_right_minus=0	max_min_right_plus=13	max_pos_hash_score=32	max_right=21	max_right_minus=20	max_right_plus=21	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.36	new_junction_read_count=16	polymorphism_frequency=3.00000000e-01	pos_hash_score=8	prediction=polymorphism	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.84	side_1_overlap=0	side_1_possible_overlap_registers=21	side_1_read_count=49	side_1_redundant=0	side_2_annotate_key=repeat	side_2_continuation=0	side_2_coverage=NA	side_2_overlap=0	side_2_possible_overlap_registers=NA	side_2_read_count=NA	side_2_redundant=1	total_non_overlap_reads=16	unique_read_sequence=TGAGA
+JC	54	.	CP001853	1099276	-1	CP001853	1793339	-1	0	alignment_overlap=4	coverage_minus=0	coverage_plus=7	flanking_left=32	flanking_right=32	frequency=1.91906005e-01	junction_possible_overlap_registers=17	key=CP001853__1099276__-1__CP001853__1793343__-1__4____32__32__0__0	max_left=13	max_left_minus=0	max_left_plus=13	max_min_left=13	max_min_left_minus=0	max_min_left_plus=13	max_min_right=0	max_min_right_minus=0	max_min_right_plus=0	max_pos_hash_score=34	max_right=18	max_right_minus=0	max_right_plus=18	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.15	new_junction_read_count=7	polymorphism_frequency=1.91906005e-01	pos_hash_score=3	prediction=polymorphism	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.64	side_1_overlap=4	side_1_possible_overlap_registers=21	side_1_read_count=37	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.62	side_2_overlap=0	side_2_possible_overlap_registers=17	side_2_read_count=29	side_2_redundant=0	total_non_overlap_reads=7
+JC	55	.	CP001853	1123774	1	CP001853	1724034	1	0	alignment_overlap=0	coverage_minus=20	coverage_plus=46	flanking_left=32	flanking_right=32	frequency=1	junction_possible_overlap_registers=21	key=CP001853__1123774__1__CP001853__1724034__1__0____32__32__0__1	max_left=26	max_left_minus=26	max_left_plus=24	max_min_left=15	max_min_left_minus=9	max_min_left_plus=15	max_min_right=16	max_min_right_minus=12	max_min_right_plus=16	max_pos_hash_score=42	max_right=23	max_right_minus=23	max_right_plus=22	neg_log10_pos_hash_p_value=NT	new_junction_coverage=1.17	new_junction_read_count=68	polymorphism_frequency=9.71428571e-01	pos_hash_score=15	prediction=consensus	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.03	side_1_overlap=0	side_1_possible_overlap_registers=21	side_1_read_count=2	side_1_redundant=0	side_2_annotate_key=repeat	side_2_continuation=0	side_2_coverage=NA	side_2_overlap=0	side_2_possible_overlap_registers=NA	side_2_read_count=NA	side_2_redundant=1	total_non_overlap_reads=66
+JC	56	.	CP001853	1123781	-1	CP001853	1305558	-1	0	alignment_overlap=0	coverage_minus=7	coverage_plus=49	flanking_left=32	flanking_right=32	frequency=1	junction_possible_overlap_registers=21	key=CP001853__1123781__-1__CP001853__1305558__-1__0____32__32__0__1	max_left=24	max_left_minus=19	max_left_plus=24	max_min_left=13	max_min_left_minus=13	max_min_left_plus=13	max_min_right=14	max_min_right_minus=14	max_min_right_plus=14	max_pos_hash_score=42	max_right=23	max_right_minus=19	max_right_plus=23	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.98	new_junction_read_count=57	polymorphism_frequency=9.82758621e-01	pos_hash_score=11	prediction=consensus	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.02	side_1_overlap=0	side_1_possible_overlap_registers=21	side_1_read_count=1	side_1_redundant=0	side_2_annotate_key=repeat	side_2_continuation=0	side_2_coverage=NA	side_2_overlap=0	side_2_possible_overlap_registers=NA	side_2_read_count=NA	side_2_redundant=1	total_non_overlap_reads=56
+JC	57	.	CP001853	1228229	-1	CP001853	1517205	1	-2	alignment_overlap=-2	coverage_minus=3	coverage_plus=4	flanking_left=32	flanking_right=32	frequency=1.73913043e-01	junction_possible_overlap_registers=19	key=CP001853__1228229__-1__CP001853__1517205__1__-2__GT__32__32__0__1	max_left=13	max_left_minus=13	max_left_plus=13	max_min_left=13	max_min_left_minus=13	max_min_left_plus=13	max_min_right=0	max_min_right_minus=0	max_min_right_plus=0	max_pos_hash_score=38	max_right=24	max_right_minus=21	max_right_plus=24	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.23	new_junction_read_count=12	polymorphism_frequency=1.73913043e-01	pos_hash_score=6	prediction=polymorphism	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=1.08	side_1_overlap=0	side_1_possible_overlap_registers=21	side_1_read_count=63	side_1_redundant=0	side_2_annotate_key=repeat	side_2_continuation=0	side_2_coverage=NA	side_2_overlap=0	side_2_possible_overlap_registers=NA	side_2_read_count=NA	side_2_redundant=1	total_non_overlap_reads=7	unique_read_sequence=GT
+JC	58	.	CP001853	1437317	-1	CP001853	1437418	1	0	alignment_overlap=0	coverage_minus=18	coverage_plus=23	flanking_left=32	flanking_right=32	frequency=1	junction_possible_overlap_registers=21	key=CP001853__1437317__-1__CP001853__1437418__1__0____32__32__0__0	max_left=23	max_left_minus=21	max_left_plus=23	max_min_left=12	max_min_left_minus=12	max_min_left_plus=11	max_min_right=16	max_min_right_minus=11	max_min_right_plus=16	max_pos_hash_score=42	max_right=22	max_right_minus=22	max_right_plus=21	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.71	new_junction_read_count=41	polymorphism_frequency=1.00000000e+00	pos_hash_score=8	prediction=consensus	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.00	side_1_overlap=0	side_1_possible_overlap_registers=21	side_1_read_count=0	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.00	side_2_overlap=0	side_2_possible_overlap_registers=21	side_2_read_count=0	side_2_redundant=0	total_non_overlap_reads=41
+JC	59	.	CP001853	1482271	-1	CP001853	1593506	-1	0	alignment_overlap=5	coverage_minus=0	coverage_plus=7	flanking_left=32	flanking_right=32	frequency=6.78983834e-01	junction_possible_overlap_registers=16	key=CP001853__1482271__-1__CP001853__1593511__-1__5____32__32__0__0	max_left=16	max_left_minus=0	max_left_plus=16	max_min_left=9	max_min_left_minus=0	max_min_left_plus=9	max_min_right=11	max_min_right_minus=0	max_min_right_plus=11	max_pos_hash_score=32	max_right=20	max_right_minus=0	max_right_plus=20	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.47	new_junction_read_count=21	polymorphism_frequency=6.78983834e-01	pos_hash_score=3	prediction=polymorphism	side_1_annotate_key=gene	side_1_continuation=0	side_1_coverage=0.15	side_1_overlap=5	side_1_possible_overlap_registers=21	side_1_read_count=9	side_1_redundant=0	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.29	side_2_overlap=0	side_2_possible_overlap_registers=16	side_2_read_count=13	side_2_redundant=0	total_non_overlap_reads=7
+JC	60	.	CP001853	1518325	-1	CP001853	1711046	1	-5	alignment_overlap=-5	coverage_minus=6	coverage_plus=10	flanking_left=32	flanking_right=32	frequency=3.88888889e-01	junction_possible_overlap_registers=16	key=CP001853__1518325__-1__CP001853__1711046__1__-5__ATTCC__32__32__1__0	max_left=21	max_left_minus=21	max_left_plus=20	max_min_left=0	max_min_left_minus=0	max_min_left_plus=0	max_min_right=13	max_min_right_minus=13	max_min_right_plus=12	max_pos_hash_score=32	max_right=13	max_right_minus=13	max_right_plus=12	neg_log10_pos_hash_p_value=NT	new_junction_coverage=0.36	new_junction_read_count=16	polymorphism_frequency=3.88888889e-01	pos_hash_score=4	prediction=polymorphism	side_1_annotate_key=repeat	side_1_continuation=0	side_1_coverage=NA	side_1_overlap=0	side_1_read_count=NA	side_1_redundant=1	side_2_annotate_key=gene	side_2_continuation=0	side_2_coverage=0.57	side_2_overlap=0	side_2_possible_overlap_registers=21	side_2_read_count=33	side_2_redundant=0	total_non_overlap_reads=16	unique_read_sequence=ATTCC
+UN	61	.	CP001853	17846	17892
+UN	62	.	CP001853	52179	53223
+UN	63	.	CP001853	53274	53540
+UN	64	.	CP001853	78976	80329
+UN	65	.	CP001853	110089	110115
+UN	66	.	CP001853	139861	139892
+UN	67	.	CP001853	146344	147475
+UN	68	.	CP001853	198687	198722
+UN	69	.	CP001853	254454	254497
+UN	70	.	CP001853	254533	254536
+UN	71	.	CP001853	258297	258301
+UN	72	.	CP001853	258353	258392
+UN	73	.	CP001853	281270	282628
+UN	74	.	CP001853	291558	291573
+UN	75	.	CP001853	316011	316043
+UN	76	.	CP001853	323604	323640
+UN	77	.	CP001853	324935	324967
+UN	78	.	CP001853	331916	331946
+UN	79	.	CP001853	336214	336244
+UN	80	.	CP001853	498955	498990
+UN	81	.	CP001853	509263	509289
+UN	82	.	CP001853	533195	533195
+UN	83	.	CP001853	533197	533197
+UN	84	.	CP001853	533199	533199
+UN	85	.	CP001853	533203	533204
+UN	86	.	CP001853	542510	542542
+UN	87	.	CP001853	603932	604120
+UN	88	.	CP001853	614280	614280
+UN	89	.	CP001853	622413	622598
+UN	90	.	CP001853	667855	667856
+UN	91	.	CP001853	667877	667882
+UN	92	.	CP001853	697662	697669
+UN	93	.	CP001853	724622	724622
+UN	94	.	CP001853	724627	724627
+UN	95	.	CP001853	724631	724631
+UN	96	.	CP001853	724639	724643
+UN	97	.	CP001853	740678	740678
+UN	98	.	CP001853	770190	770210
+UN	99	.	CP001853	772951	772962
+UN	100	.	CP001853	773001	773001
+UN	101	.	CP001853	800474	800484
+UN	102	.	CP001853	871992	871992
+UN	103	.	CP001853	881318	881337
+UN	104	.	CP001853	881439	881439
+UN	105	.	CP001853	881442	881458
+UN	106	.	CP001853	894906	894989
+UN	107	.	CP001853	895714	895797
+UN	108	.	CP001853	957396	957423
+UN	109	.	CP001853	959655	959690
+UN	110	.	CP001853	959692	959692
+UN	111	.	CP001853	959694	959694
+UN	112	.	CP001853	1032417	1032446
+UN	113	.	CP001853	1050585	1050603
+UN	114	.	CP001853	1056849	1056850
+UN	115	.	CP001853	1152937	1152960
+UN	116	.	CP001853	1155535	1155535
+UN	117	.	CP001853	1198032	1198041
+UN	118	.	CP001853	1232023	1232046
+UN	119	.	CP001853	1232142	1232168
+UN	120	.	CP001853	1236998	1236998
+UN	121	.	CP001853	1245128	1245131
+UN	122	.	CP001853	1245134	1245135
+UN	123	.	CP001853	1280056	1280057
+UN	124	.	CP001853	1280060	1280060
+UN	125	.	CP001853	1280062	1280073
+UN	126	.	CP001853	1304182	1304642
+UN	127	.	CP001853	1304699	1305456
+UN	128	.	CP001853	1305517	1305534
+UN	129	.	CP001853	1305560	1305560
+UN	130	.	CP001853	1305576	1305609
+UN	131	.	CP001853	1305657	1308051
+UN	132	.	CP001853	1308119	1308131
+UN	133	.	CP001853	1308183	1308219
+UN	134	.	CP001853	1308682	1308782
+UN	135	.	CP001853	1309095	1309160
+UN	136	.	CP001853	1309325	1309330
+UN	137	.	CP001853	1309433	1309436
+UN	138	.	CP001853	1309617	1310988
+UN	139	.	CP001853	1313530	1313531
+UN	140	.	CP001853	1334394	1334420
+UN	141	.	CP001853	1406203	1406203
+UN	142	.	CP001853	1437318	1437417
+UN	143	.	CP001853	1464538	1464540
+UN	144	.	CP001853	1476370	1476391
+UN	145	.	CP001853	1476437	1482228
+UN	146	.	CP001853	1482259	1482259
+UN	147	.	CP001853	1483023	1483026
+UN	148	.	CP001853	1483105	1483126
+UN	149	.	CP001853	1664277	1665429
+UN	150	.	CP001853	1665431	1665432
+UN	151	.	CP001853	1665434	1665448
+UN	152	.	CP001853	1665450	1665551
+UN	153	.	CP001853	1665553	1665556
+UN	154	.	CP001853	1665558	1665558
+UN	155	.	CP001853	1665565	1665566
+UN	156	.	CP001853	1665568	1665632
+UN	157	.	CP001853	1682084	1682092
+UN	158	.	CP001853	1720322	1720322
+UN	159	.	CP001853	1720965	1720968
+UN	160	.	CP001853	1723839	1723843
+UN	161	.	CP001853	1723845	1723845
+UN	162	.	CP001853	1723848	1723848
+UN	163	.	CP001853	1723852	1723855
+UN	164	.	CP001853	1723858	1723859
+UN	165	.	CP001853	1723861	1723861
+UN	166	.	CP001853	1750844	1750854
+UN	167	.	CP001853	1771238	1777109
+UN	168	.	CP001853	1840399	1840422
+UN	169	.	CP001853	1840424	1840424
+UN	170	.	CP001853	1852712	1852714
+UN	171	.	CP001853	1860117	1860147
+UN	172	.	CP001853	1860275	1860283
+UN	173	.	CP001853	1860442	1860507
+UN	174	.	CP001853	1860823	1860923
+UN	175	.	CP001853	1861386	1861418
+UN	176	.	CP001853	1861474	1861486
+UN	177	.	CP001853	1861554	1863948
+UN	178	.	CP001853	1863996	1864021
+UN	179	.	CP001853	1864023	1864024
+UN	180	.	CP001853	1867731	1873374
+UN	181	.	CP001853	1873386	1873395
+UN	182	.	CP001853	1873414	1873430
+UN	183	.	CP001853	1876269	1882140
