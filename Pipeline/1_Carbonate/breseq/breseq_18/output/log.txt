@@ -1,0 +1,4 @@
+Mon Jul 26 20:34:08 2021
+
+breseq -j 8 -p -o breseq_18 -r /N/project/Bifidobacterium/BB12_Jensen_2021.gb ../Sample_18/Sample_18_R1_trimmed.fastq ../Sample_18/Sample_18_R2_trimmed.fastq
+
