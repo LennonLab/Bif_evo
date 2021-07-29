@@ -1,2 +1,2 @@
-# Bif_evo
+# Bifidobacterium
 Adaptive evolution of probiotics
