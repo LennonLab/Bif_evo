@@ -1,0 +1,14 @@
+{
+  "CP001853": {
+    "average": 83.32785,
+    "deletion_coverage_propagation_cutoff": 12.0,
+    "deletion_coverage_seed_cutoff": 0.0,
+    "dispersion": 11.33317,
+    "nbinom_dispersion": 9.94604177016345,
+    "nbinom_mean_parameter": 85.77158,
+    "nbinom_prob_parameter": 0.100542509584048,
+    "nbinom_size_parameter": 9.587657,
+    "nbinom_variance": 853.087717372916,
+    "variance": 944.3688
+  }
+}
