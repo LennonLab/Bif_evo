@@ -1,0 +1,7 @@
+mut_type,Treatment,prop,count,order
+Carbohydrate metabolism,F,0.1875,3,2
+Carbohydrate transport,F,0.1875,3,1
+Carbohydrate metabolism,P,0.25,4,4
+Carbohydrate transport,P,0.125,2,3
+Carbohydrate metabolism,X,0.0625,7,6
+Carbohydrate transport,X,0.4375,1,5
