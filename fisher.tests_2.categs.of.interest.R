@@ -1,3 +1,11 @@
+require("png")
+require("dplyr")
+require("vioplot")
+require("grid")
+require("dplyr")
+require("knitr")
+require("extrafont")
+
 rm(list=ls())
 
 
@@ -35,7 +43,7 @@ gene.type.tab.margins <- addmargins(gene.type.tab)
 # X-squared = 2.3413, df = 2, p-value = 0.3102
 gene.type.chi <- chisq.test(gene.type.tab)
 
-#Fisher test. p = 0.3990
+#Fisher test. p = 0.2421
 fisher.test(gene.type.tab)
 
 # Posthoc analysis

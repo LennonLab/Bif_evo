@@ -219,6 +219,7 @@ X_freqlist_syn = freq_list(infile=workingdir+"\\Pipeline\\3_Python\\mutation.fre
 X_freqs_syn = tuple(X_freqlist_syn.loc[:, 'freq'].values)
 
 #%%
+#Define the simulations functions
 roogeld = dict()
 roogeld["BIF_00360"]= DD["BIF_00360"]; roogeld["BIF_01452"] = DD["BIF_01452"]; roogeld["BIF_01454"] = DD["BIF_01454"]
 
@@ -347,7 +348,7 @@ Xsimpd_syn.to_csv(index=True,path_or_buf=workingdir+"\\Pipeline\\3_Python\\simou
 
 #%%
 
-#You can import simulation results from a file.
+#You can import simulation results from a file. But it doesnt work because you get a dict back in the wrong format. It's a dict of dicts rather than a dict of lists. So you have to change your code for reading it if youre trying to calc FDR values
 start = time.time();print(start)
 recs = [rec for rec in SeqIO.parse(workingdir + "\\Pipeline\\1_Carbonate\\BB12_Jensen_2021.gb", "genbank")]
 myrec=recs[0]
@@ -359,7 +360,8 @@ DD = index_genbank_features_multiplechroms(recs, "gene", "locus_tag", 'gene', AT
 #smopd = pd.read_csv(r"C:\Users\rmoge\OneDrive - Indiana University\Mycoplasma_OneDrive\Strains\simulations_syn3B_100000.csv")
 #smo1pd = pd.read_csv(r"C:\Users\rmoge\OneDrive - Indiana University\Mycoplasma_OneDrive\Strains\simulations_syn1.0_100000.csv")
 start = time.time();print(start)
-Fsimpd = pd.read_csv(workingdir+"\\Pipeline\\3_Python\\simout_F.nonsyn_100000.csv")
+#Fsimpd = pd.read_csv(workingdir+"\\Pipeline\\3_Python\\simout_F.nonsyn_100000.csv")
+Fsimpd = pd.read_csv("C:\\Users\\rmoge\\OneDrive - Indiana University\\Lab.Notebook\\20190820_Bifidobacterium\\Pipeline_parts\\simulation.outputs\\simout_F.nonsyn_100000.csv")
 Fsim = pd.DataFrame.to_dict(Fsimpd)
 end = time.time()
 print(end - start)
@@ -372,7 +374,8 @@ end = time.time()
 print(end - start)
 
 start = time.time();print(start)
-Xsimpd = pd.read_csv(workingdir+"\\Pipeline\\3_Python\\simout_X.nonsyn_100000.csv")
+#Xsimpd = pd.read_csv(workingdir+"\\Pipeline\\3_Python\\simout_X.nonsyn_100000.csv")
+Xsimpd = pd.read_csv("C:\\Users\\rmoge\\OneDrive - Indiana University\\Lab.Notebook\\20190820_Bifidobacterium\\Pipeline_parts\\simulation.outputs\\simout_X.nonsyn_100000.csv")
 Xsim = pd.DataFrame.to_dict(Xsimpd)
 end = time.time()
 print(end - start)
@@ -467,13 +470,13 @@ X_pvals = dict();reps=100000
 
 
 locustagstotest_X=['BIF_00208','BIF_00327','BIF_00489','BIF_00490','BIF_00532','BIF_00573','BIF_00776','BIF_00936','BIF_00944','BIF_01193','BIF_01492','BIF_01616','BIF_01789','BIF_02090','BIF_01402','BIF_01023']
-locustagssums_X=[5,2.745,13.125,1.722,3.004,2.0,2.001,.895,2.575,2.643,1.056,4.010,.698,1.508,2.013,3.641,1.248]
+locustagssums_X=[5,2.745,13.125,1.722,3.004,2.0,2.001,.895,2.575,1.056,4.010,.698,1.508,2.013,3.641,1.248]
 
 for index,j in enumerate(locustagstotest_X):
     #print(index)
     #print(j)
-    X_pvals[j]=max(1/reps,np.count_nonzero([i>=locustagssums_X[index] for i in Xsim[j]])/reps)
-    
+    #X_pvals[j]=max(1/reps,np.count_nonzero([i>=locustagssums_X[index] for i in Xsim[j]])/reps)
+    X_pvals[j]=max(1/reps,np.count_nonzero([i>=locustagssums_X[index] for i in Xsim[j].values()])/reps)#this is the code you have to use if you read the simulations in from a file instead of doing the simulations inside this python script
 print(X_pvals)
 X_fdr=adjust_BH(roypvals=X_pvals)
 print(X_fdr)
@@ -486,7 +489,12 @@ for k,v in X_fdr.items():
 X_fdrpd=pd.DataFrame.from_dict(X_fdr_out)
 X_fdrpd.to_csv(index=True,path_or_buf=workingdir+"\\Pipeline\\3_Python\\fdrout_X.nonsyn_100000.csv")
 
-
+#%%
+thinkp=dict()
+locustags=[.5,10]
+myl=[1,4,7,9,10,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+for j in locustags:
+    thinkp[j]=np.count_nonzero([i>=j for i in myl])
 #%%
 Fsyn_pvals = dict();reps=100000
 
