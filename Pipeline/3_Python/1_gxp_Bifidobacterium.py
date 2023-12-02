@@ -65,7 +65,7 @@ def get_gxp_matrix(output_name,include_polymorphisms=True):
                 if frequency != 1 and include_polymorphisms==False:
                     continue
                 if line_split[0] == 'SNP':
-                    if [s for s in line_split if 'snp_type=' in s][0].split('=')[1] == 'nonsynonymous':
+                    if [s for s in line_split if 'snp_type=' in s][0].split('=')[1] == 'nonsynonymous' or [s for s in line_split if 'snp_type=' in s][0].split('=')[1] == 'nonsense':
                         locus_tag = [s for s in line_split if 'locus_tag=' in s][0].split('=')[1]
                         frequency = float([s for s in line_split if 'frequency=' in s][0].split('=')[1])
                         if ';' in locus_tag:
@@ -194,6 +194,6 @@ def get_gxp_matrix(output_name,include_polymorphisms=True):
 
 
 #%%
-test=get_gxp_matrix('Bifidobacterium_raw_gxp',True)
-test=get_gxp_matrix('Bifidobacterium_raw_gxp_fixed.only',False)
+test1=get_gxp_matrix('Bifidobacterium_raw_gxp',True)
+test2=get_gxp_matrix('Bifidobacterium_raw_gxp_fixed.only',False)
 #%%

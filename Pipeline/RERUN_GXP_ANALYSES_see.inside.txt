@@ -1,0 +1,11 @@
+2022 08 13
+When I ran it the first time, I failed to fix Will's code: For SNPs, he captured ONLY nonsynonymous SNPs. But I wanted to capture both nonsynonymous AND nonsense SNPs. I rewrote the code so that it will do that, BUT I HAVE NOT YET rerun THE CODE to actually do it.
+
+20231201
+Have begun the process of rerunning the huge R script. It will now include the updated gxp.
+The main thing I need to do is to remake a version of the signif-only gxp.
+
+Note that Bifidobacterium one is using SNPs (non-synonymous) and DELs when building the GXP.
+The mutation distribution simulation is using all types of non-synonymous mutations.
+
+Meanwhile, the XevoLong 3_get.candidate.genes.py is only fetching frequencies for its frequency list from SNPs---not indels.

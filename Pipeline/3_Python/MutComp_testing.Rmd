@@ -14,7 +14,7 @@ geometry: margin=2.54cm
 ```{r setup}
 rm(list=ls())
 getwd()
-setwd("~/GitHub/MinimalCell")
+#setwd("~/GitHub/MinimalCell")
 ```
 
 # Load packages and functions
