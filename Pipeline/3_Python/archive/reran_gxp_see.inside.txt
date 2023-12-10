@@ -2,7 +2,7 @@
 When I ran it the first time, I failed to fix Will's code: For SNPs, he captured ONLY nonsynonymous SNPs. But I wanted to capture both nonsynonymous AND nonsense SNPs. I rewrote the code so that it will do that, BUT I HAVE NOT YET rerun THE CODE to actually do it.
 
 20231201
-Have begun the process of rerunning the huge R script. It will now include the updated gxp.
+Have begun the process of rerunning the huge R script. It will now include the updated gxp---this will now include nonsense mutations.
 The main thing I need to do is to remake a version of the signif-only gxp.
 
 Note that Bifidobacterium one is using SNPs (non-synonymous) and DELs when building the GXP.

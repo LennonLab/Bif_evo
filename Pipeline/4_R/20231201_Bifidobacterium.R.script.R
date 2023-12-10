@@ -1,8 +1,6 @@
 #######################################################
-#2020/11/04
+#2023/12/10
 #B. animalis subsp. lactis
-#OD
-#Grown in anaerobic tubes, Jake's method
 require("ggplot2");require("tidyverse");require("png");require("dplyr");require("grid");require("vegan");require("indicspecies");require("ggrepel");require("gridExtra")
 
 #require("ggimage");require("grid")
