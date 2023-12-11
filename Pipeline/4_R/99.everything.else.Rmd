@@ -1,0 +1,54 @@
+---
+title: "99. Non main figures"
+output: word_document
+date: "2023-12-10"
+---
+
+
+# Clear workspace and set directory
+```{r setup}
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/Bifidobacterium"))
+#setwd("~/GitHub/Bifidobacterium")
+getwd()
+rm(list=ls())
+```
+
+# Load packages and functions
+```{r}
+getwd()
+require("ggplot2");require("tidyverse");require("png");require("dplyr");require("grid");require("vegan");require("indicspecies");require("ggrepel");require("gridExtra")
+```
+
+# Load data
+```{r}
+
+mycols=c('black','black','black')
+mycols_breakout=c('black','black','black','black','black','black','black','black')
+
+
+mydf0<-read.csv("./Data/OD_20201104.csv")
+mydf0$carbon2<-recode(mydf0$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+mydf0$carbon2<-factor(mydf0$carbon2, levels=c("DP0","DP5","DP24"))
+mydf0$carbon<-factor(mydf0$carbon, levels=c("Monomer","Low-DP","High-DP"))
+
+#Import OD data from nutrient breakout xpt
+mybreakout<-read.csv("./Data/breakout_20210512.csv")
+mybreakout$carbon.tech<-factor(mybreakout$carbon.tech, levels=c("G", "F", "G:F 1:1","G-F","G:F 1:5", "G-F5","G:F 1:24","G-F24" ))
+
+#Import OD Data from the nutrient breakout xpt, formatted as a 2way ANOVA: Factor 1: G-F ratio Factor 2: are the Gs and Fs monomers or bound up in oligomers?
+mybreakout_2way<-read.csv("./Data/breakout_20210512_2way.csv")
+mybreakout_2way$GF.ratio<-factor(mybreakout_2way$GF.ratio, levels=c("1:1","1:5","1:24"))
+mybreakout_2way$Saccharide.size<-factor(mybreakout_2way$Saccharide.size, levels=c("Monomer","Oligomer"))
+
+#######################Import OD data from nutrient breakout xpts with EVOLVED bacteria##############################
+mybreakoutF<-read.csv("./Data/breakout_20210520_evolved_DP0.csv")
+mybreakoutF$carbon.tech<-factor(mybreakoutF$carbon.tech, levels=c("G", "F", "G:F 1:1","G-F","G:F 1:5", "G-F5","G:F 1:24","G-F24" ))
+
+mybreakoutP<-read.csv("./Data/breakout_20210526_evolved_DP5.csv")
+mybreakoutP$carbon.tech<-factor(mybreakoutP$carbon.tech, levels=c("G", "F", "G:F 1:1","G-F","G:F 1:5", "G-F5","G:F 1:24","G-F24" ))
+
+mybreakoutX<-read.csv("./Data/breakout_20210531_evolved_DP24.csv")
+mybreakoutX$carbon.tech<-factor(mybreakoutX$carbon.tech, levels=c("G", "F", "G:F 1:1","G-F","G:F 1:5", "G-F5","G:F 1:24","G-F24" ))
+
+
+```

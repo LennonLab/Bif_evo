@@ -9,38 +9,35 @@ require("ggplot2");require("tidyverse");require("png");require("dplyr");require(
 #install.packages("magick")
 #library(magick)
 #####Don't run library(magick), it broke my Rstudio instance on Windows.
+setwd("~/GitHub/Bifidobacterium")
+
 
 mycols=c('black','black','black')
 mycols_breakout=c('black','black','black','black','black','black','black','black')
 #Import ancestor data
 #Import basic OD data on the 3 substrates
-mydf0<-read_csv("~\\..\\OneDrive - Indiana University\\Lab.Notebook\\20190820_Bifidobacterium\\data\\20201104_OD.final_xevo_T0\\20201104_B.animalis.McK.mthd.csv")
-#mydf0$carbon2<-factor(mydf0$carbon2, levels=c("F","G-F5","G-F24"))
-#mydf0$carbon2<-recode_factor(mydf0$carbon2, `1` = "Fructose", `2` = "DP5", `3` = "DP24")
+mydf0<-read_csv("./Data/breakout_20210512.csv")
 mydf0$carbon2<-recode(mydf0$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
 mydf0$carbon2<-factor(mydf0$carbon2, levels=c("DP0","DP5","DP24"))
 mydf0$carbon<-factor(mydf0$carbon, levels=c("Monomer","Low-DP","High-DP"))
 
-#Import OD data from nutrient breakout xpmnt
-mybreakout<-read_csv("~/../OneDrive - Indiana University/Lab.Notebook/20190820_Bifidobacterium/data/nutrient.breakouts/20210512_OD.final_nutrient.breakout.ancor/20210512_B.animalis.McK.mthd.csv")
+#Import OD data from nutrient breakout xpt
+mybreakout<-read.csv("./Data/breakout_20210512.csv")
 mybreakout$carbon.tech<-factor(mybreakout$carbon.tech, levels=c("G", "F", "G:F 1:1","G-F","G:F 1:5", "G-F5","G:F 1:24","G-F24" ))
-#mybreakout$carbon.plotting<-recode(mybreakout$carbon$tech)
-#Import OD Data from the nutrient breakout xpmnt, formatted as a 2way ANOVA: Factor 1: G-F ratio Factor 2: are the Gs and Fs monomers or in fiber molecules?
-mybreakout_2way<-read_csv("~/../OneDrive - Indiana University/Lab.Notebook/20190820_Bifidobacterium/data/nutrient.breakouts/20210512_OD.final_nutrient.breakout.ancor/20210512_B.animalis.McK.mthd_2way.enabled.csv")
+
+#Import OD Data from the nutrient breakout xpt, formatted as a 2way ANOVA: Factor 1: G-F ratio Factor 2: are the Gs and Fs monomers or in fiber molecules?
+mybreakout_2way<-read.csv("./Data/breakout_20210512_2way.csv")
 mybreakout_2way$GF.ratio<-factor(mybreakout_2way$GF.ratio, levels=c("1:1","1:5","1:24"))
 mybreakout_2way$Saccharide.size<-factor(mybreakout_2way$Saccharide.size, levels=c("Monomer","Oligomer"))
 
 
-
-
 ######
 #Import data from HPLC experiments
-myhplc<-read_csv("~/../OneDrive - Indiana University/Lab.Notebook/20190820_Bifidobacterium/data/HPLC_Bifido/20211006_HPLC_glu.fru.lact.ace_v3.csv")
+myhplc<-read.csv("./Data/metabolite.flux.data.csv")
 myhplc$condition_short<-factor(myhplc$condition_short,levels=c("GF","F"))
 myhplc$evo_trt<-factor(myhplc$evo_trt,levels=c("F","P","X","Anc"))
 myhplc$evo_trt_plotting<-recode(myhplc$evo_trt, "F" = "DP0", "P" = "DP5", "X" = "DP24", "Anc" = "Ancestor")
 myhplc$evo_trt_plotting<-factor(myhplc$evo_trt_plotting,levels=c("DP0","DP5","DP24","Ancestor"))
-
 
 
 ###########Statistical test on ancestor data#################
@@ -51,12 +48,9 @@ TukeyHSD(tubeaov0)
 #All treatments are significantly different.
 #Tukey letters: A, B, C
 
-
-
-
 ###########Import evolved data from timepoint T151, or 1003 generations of evolution.#############
 ###############Import basic OD data on the 3 substrates############
-mydf151<-read_csv("~\\..\\OneDrive - Indiana University\\Lab.Notebook\\20190820_Bifidobacterium\\data\\20210509_OD.final_xevo_T151_FINAL\\20210509_B.animalis.McK.mthd.csv")
+mydf151<-read.csv("./Data/OD_evolved_20210509.csv")
 #mydf151$carbon2<-factor(mydf151$carbon2, levels=c("F","G-F5","G-F24"))
 mydf151$carbon<-factor(mydf151$carbon, levels=c("Monomer","Low-DP","High-DP"))
 mydf151$carbon2<-recode(mydf151$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
@@ -69,6 +63,7 @@ TukeyHSD(tubeaov151)
 #F and GF7 are significantly higher than GF23. F and GF5 not significantly different from each other.
 #Tukey letters: A, A, B
 #Interpretation: There is no longer any difference in growth on F vs. Low-DP
+
 
 #####################Do the same kind of ANOVA but for comparing absolute increase vs. ancestor####################
 tubeaov151_abs.change<-aov(mydf151$abs.change.vs.anc ~ mydf151$carbon2)
@@ -84,26 +79,51 @@ TukeyHSD(tubeaov151_pct.increase)
 ###Significant ANOVA
 ###Tukey letters: A, B, B
 
+
 #####
-#######################Import OD data from nutrient breakout xpmnts with EVOLVED bacteria##############################
-mybreakoutF<-read_csv("~/../OneDrive - Indiana University/Lab.Notebook/20190820_Bifidobacterium/data/nutrient.breakouts/20210520_OD.final_nutrient.breakout.F-evolved/20210520_nutrient.breakout.F.csv")
+#######################Import OD data from nutrient breakout xpts with EVOLVED bacteria##############################
+mybreakoutF<-read.csv("./Data/breakout_20210520_evolved_DP0.csv")
 mybreakoutF$carbon.tech<-factor(mybreakoutF$carbon.tech, levels=c("G", "F", "G:F 1:1","G-F","G:F 1:5", "G-F5","G:F 1:24","G-F24" ))
 
-mybreakoutP<-read_csv("~/../OneDrive - Indiana University/Lab.Notebook/20190820_Bifidobacterium/data/nutrient.breakouts/20210526_OD.final_nutrient.breakout.P-evolved/20210526_nutrient.breakout.P.csv")
+mybreakoutP<-read.csv("./Data/breakout_20210526_evolved_DP5.csv")
 mybreakoutP$carbon.tech<-factor(mybreakoutP$carbon.tech, levels=c("G", "F", "G:F 1:1","G-F","G:F 1:5", "G-F5","G:F 1:24","G-F24" ))
 
-mybreakoutX<-read_csv("~/../OneDrive - Indiana University/Lab.Notebook/20190820_Bifidobacterium/data/nutrient.breakouts/20210531_OD.final_nutrient.breakout.X-evolved/20210531_nutrient.breakout.X.csv")
+mybreakoutX<-read.csv("./Data/breakout_20210531_evolved_DP24.csv")
 mybreakoutX$carbon.tech<-factor(mybreakoutX$carbon.tech, levels=c("G", "F", "G:F 1:1","G-F","G:F 1:5", "G-F5","G:F 1:24","G-F24" ))
 
 
+
 #######################Import anaerobic growth curve data##############################################################
-grcvdata<-read_csv("~/../OneDrive - Indiana University/Lab.Notebook/20190820_Bifidobacterium/data/anaerobic.growth.curves/grcv_data_BIfidobacterium_cases.format.csv")
+grcvdata<-read.csv("./Data/growth.curves.anaerobic.csv")
 grcvdata$carbon.tech.assay<-factor(grcvdata$carbon.tech.assay, levels=c("F", "G-F5","G-F24","Ancestor"))
 grcvdata$carbon.tech.evo<-factor(grcvdata$carbon.tech.evo, levels=c("F", "G-F5","G-F24","Ancestor"))
 grcvdata$carbon.plotting.assay<-recode(grcvdata$carbon.tech.assay, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
 grcvdata$carbon.plotting.evo<-recode(grcvdata$carbon.tech.evo, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#art h
 ###################Plots####################
 #fig
 #Make a plot of the ancestor data: OD when grown on the 3 basic substrates
