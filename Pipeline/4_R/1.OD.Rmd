@@ -1,0 +1,77 @@
+---
+title: "1.OD"
+output: word_document
+date: "2023-12-10"
+---
+
+
+# Clear workspace and set directory
+```{r setup}
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/Bifidobacterium"))
+#setwd("~/GitHub/Bifidobacterium")
+getwd()
+rm(list=ls())
+```
+
+# Load packages and functions
+```{r}
+getwd()
+require("ggplot2");require("tidyverse");require("png");require("dplyr");require("grid");require("vegan");require("indicspecies");require("ggrepel");require("gridExtra")
+```
+
+# Load data
+```{r}
+mycols=c('black','black','black')
+
+###############Import basic OD data on the 3 substrates############
+mydf0<-read_csv("./Data/OD_20201104.csv")
+mydf0$carbon2<-recode(mydf0$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+mydf0$carbon2<-factor(mydf0$carbon2, levels=c("DP0","DP5","DP24"))
+mydf0$carbon<-factor(mydf0$carbon, levels=c("Monomer","Low-DP","High-DP"))
+
+###########Import evolved data from timepoint T151, or 1003 generations of evolution.#############
+mydf151<-read.csv("./Data/OD_evolved_20210509.csv")
+mydf151$carbon<-factor(mydf151$carbon, levels=c("Monomer","Low-DP","High-DP"))
+mydf151$carbon2<-recode(mydf151$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+mydf151$carbon2<-factor(mydf151$carbon2, levels=c("DP0","DP5","DP24"))
+
+```
+
+# Statistical test on ancestor data
+```{r}
+#Does the ancestor show different growth patterns on the different carbon sources?
+tubeaov0<-aov(mydf0$OD.600 ~ mydf0$carbon)
+summary(tubeaov0)
+TukeyHSD(tubeaov0)
+#All treatments are significantly different.
+#Tukey letters: A, B, C
+```
+
+# Do a statistical test: Grown on their "home" diets, do the evolved populations differ in their max OD on each diet?
+```{r}
+tubeaov151<-aov(mydf151$OD.600 ~ mydf151$carbon)
+summary(tubeaov151)
+TukeyHSD(tubeaov151)
+#F and GF7 are significantly higher than GF23. F and GF5 not significantly different from each other.
+#Tukey letters: A, A, B
+#Interpretation: There is no longer any difference in growth on DP0 vs. DP5
+```
+
+# Do the same kind of ANOVA but for comparing absolute increase vs. ancestor
+```{r}
+tubeaov151_abs.change<-aov(mydf151$abs.change.vs.anc ~ mydf151$carbon2)
+summary(tubeaov151_abs.change)
+TukeyHSD(tubeaov151_abs.change)
+###Significant ANOVA
+###Tukey letters: A, B, C
+```
+
+# Do the same kind of ANOVA but for comparing the percent increase vs. ancestor##################
+```{r}
+tubeaov151_pct.increase<-aov(mydf151$percent.increase.vs.anc ~ mydf151$carbon2)
+summary(tubeaov151_pct.increase)
+TukeyHSD(tubeaov151_pct.increase)
+###Significant ANOVA
+###Tukey letters: A, B, B
+```
+

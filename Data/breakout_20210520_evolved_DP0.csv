@@ -1,0 +1,65 @@
+strain,ID,base.medium,carbon,carbon.tech,Condition,anc.value,OD.600,raw,molecule.size,proportion.F
+Banimlact,Anc,MP5,Monomer,F,anaerobic,0.44925,1.402,1402,1,1
+Banimlact,Anc,MP5,Monomer,F,anaerobic,0.44925,1.345,1345,1,1
+Banimlact,Anc,MP5,Monomer,F,anaerobic,0.44925,1.482,1482,1,1
+Banimlact,Anc,MP5,Monomer,F,anaerobic,0.44925,1.393,1393,1,1
+Banimlact,Anc,MP5,Monomer,F,anaerobic,0.44925,1.249,1249,1,1
+Banimlact,Anc,MP5,Monomer,F,anaerobic,0.44925,1.278,1278,1,1
+Banimlact,Anc,MP5,Monomer,F,anaerobic,0.44925,1.473,1473,1,1
+Banimlact,Anc,MP5,Monomer,F,anaerobic,0.44925,1.317,1317,1,1
+Banimlact,Anc,MP5,Low-DP,G-F5,anaerobic,0.845625,0.915,915,6,0.833333333
+Banimlact,Anc,MP5,Low-DP,G-F5,anaerobic,0.845625,0.751,751,6,0.833333333
+Banimlact,Anc,MP5,Low-DP,G-F5,anaerobic,0.845625,0.744,744,6,0.833333333
+Banimlact,Anc,MP5,Low-DP,G-F5,anaerobic,0.845625,1.195,1195,6,0.833333333
+Banimlact,Anc,MP5,Low-DP,G-F5,anaerobic,0.845625,1.181,1181,6,0.833333333
+Banimlact,Anc,MP5,Low-DP,G-F5,anaerobic,0.845625,1.207,1207,6,0.833333333
+Banimlact,Anc,MP5,Low-DP,G-F5,anaerobic,0.845625,0.853,853,6,0.833333333
+Banimlact,Anc,MP5,Low-DP,G-F5,anaerobic,0.845625,1.127,1127,6,0.833333333
+Banimlact,Anc,MP5,High-DP,G-F24,anaerobic,0.265625,0.522,522,25,0.96
+Banimlact,Anc,MP5,High-DP,G-F24,anaerobic,0.265625,0.328,328,25,0.96
+Banimlact,Anc,MP5,High-DP,G-F24,anaerobic,0.265625,0.37,370,25,0.96
+Banimlact,Anc,MP5,High-DP,G-F24,anaerobic,0.265625,0.516,516,25,0.96
+Banimlact,Anc,MP5,High-DP,G-F24,anaerobic,0.265625,0.477,477,25,0.96
+Banimlact,Anc,MP5,High-DP,G-F24,anaerobic,0.265625,0.469,469,25,0.96
+Banimlact,Anc,MP5,High-DP,G-F24,anaerobic,0.265625,0.39,390,25,0.96
+Banimlact,Anc,MP5,High-DP,G-F24,anaerobic,0.265625,0.394,394,25,0.96
+Banimlact,Anc,MP5,,G-F,anaerobic,1.276375,1.398,1398,2,0.5
+Banimlact,Anc,MP5,,G-F,anaerobic,1.276375,1.322,1322,2,0.5
+Banimlact,Anc,MP5,,G-F,anaerobic,1.276375,1.26,1260,2,0.5
+Banimlact,Anc,MP5,,G-F,anaerobic,1.276375,1.166,1166,2,0.5
+Banimlact,Anc,MP5,,G-F,anaerobic,1.276375,1.293,1293,2,0.5
+Banimlact,Anc,MP5,,G-F,anaerobic,1.276375,1.426,1426,2,0.5
+Banimlact,Anc,MP5,,G-F,anaerobic,1.276375,1.37,1370,2,0.5
+Banimlact,Anc,MP5,,G-F,anaerobic,1.276375,1.214,1214,2,0.5
+Banimlact,Anc,MP5,,G:F 1:1,anaerobic,1.413,1.32,1440,1,0.5
+Banimlact,Anc,MP5,,G:F 1:1,anaerobic,1.413,1.209,1329,1,0.5
+Banimlact,Anc,MP5,,G:F 1:1,anaerobic,1.413,1.468,1588,1,0.5
+Banimlact,Anc,MP5,,G:F 1:1,anaerobic,1.413,1.147,1267,1,0.5
+Banimlact,Anc,MP5,,G:F 1:1,anaerobic,1.413,1.28,1400,1,0.5
+Banimlact,Anc,MP5,,G:F 1:1,anaerobic,1.413,1.342,1462,1,0.5
+Banimlact,Anc,MP5,,G:F 1:1,anaerobic,1.413,1.248,1368,1,0.5
+Banimlact,Anc,MP5,,G:F 1:1,anaerobic,1.413,1.208,1328,1,0.5
+Banimlact,Anc,MP5,,G:F 1:5,anaerobic,1.098,1.511,1511,1,0.833333333
+Banimlact,Anc,MP5,,G:F 1:5,anaerobic,1.098,1.277,1277,1,0.833333333
+Banimlact,Anc,MP5,,G:F 1:5,anaerobic,1.098,1.451,1451,1,0.833333333
+Banimlact,Anc,MP5,,G:F 1:5,anaerobic,1.098,1.211,1211,1,0.833333333
+Banimlact,Anc,MP5,,G:F 1:5,anaerobic,1.098,1.307,1307,1,0.833333333
+Banimlact,Anc,MP5,,G:F 1:5,anaerobic,1.098,1.283,1283,1,0.833333333
+Banimlact,Anc,MP5,,G:F 1:5,anaerobic,1.098,1.427,1427,1,0.833333333
+Banimlact,Anc,MP5,,G:F 1:5,anaerobic,1.098,1.275,1275,1,0.833333333
+Banimlact,Anc,MP5,,G:F 1:24,anaerobic,0.883875,1.219,1219,1,0.96
+Banimlact,Anc,MP5,,G:F 1:24,anaerobic,0.883875,1.189,1189,1,0.96
+Banimlact,Anc,MP5,,G:F 1:24,anaerobic,0.883875,1.399,1399,1,0.96
+Banimlact,Anc,MP5,,G:F 1:24,anaerobic,0.883875,1.178,1178,1,0.96
+Banimlact,Anc,MP5,,G:F 1:24,anaerobic,0.883875,1.255,1255,1,0.96
+Banimlact,Anc,MP5,,G:F 1:24,anaerobic,0.883875,1.305,1305,1,0.96
+Banimlact,Anc,MP5,,G:F 1:24,anaerobic,0.883875,1.527,1527,1,0.96
+Banimlact,Anc,MP5,,G:F 1:24,anaerobic,0.883875,1.209,1209,1,0.96
+Banimlact,Anc,MP5,,G,anaerobic,1.43825,1.598,1718,1,0
+Banimlact,Anc,MP5,,G,anaerobic,1.43825,1.453,1573,1,0
+Banimlact,Anc,MP5,,G,anaerobic,1.43825,1.778,1898,1,0
+Banimlact,Anc,MP5,,G,anaerobic,1.43825,1.225,1345,1,0
+Banimlact,Anc,MP5,,G,anaerobic,1.43825,1.414,1534,1,0
+Banimlact,Anc,MP5,,G,anaerobic,1.43825,1.516,1636,1,0
+Banimlact,Anc,MP5,,G,anaerobic,1.43825,1.758,1878,1,0
+Banimlact,Anc,MP5,,G,anaerobic,1.43825,1.299,1419,1,0

@@ -12,13 +12,15 @@ geometry: margin=2.54cm
 
 # Clear workspace and set directory
 ```{r setup}
-rm(list=ls())
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/MinimalCell"))
+#setwd("~/GitHub/MinimalCell")
 getwd()
-setwd("~/GitHub/MinimalCell")
+rm(list=ls())
 ```
 
 # Load packages and functions
 ```{r}
+getwd()
 require("png")
 require("dplyr")
 require("grid")

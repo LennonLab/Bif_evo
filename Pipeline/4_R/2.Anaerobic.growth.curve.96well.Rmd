@@ -1,0 +1,32 @@
+---
+title: "2.Anaerobic growth curve (96 well)"
+output: word_document
+date: "2023-12-10"
+---
+
+
+# Clear workspace and set directory
+```{r setup}
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/Bifidobacterium"))
+#setwd("~/GitHub/Bifidobacterium")
+getwd()
+rm(list=ls())
+```
+
+# Load packages and functions
+```{r}
+getwd()
+require("ggplot2");require("tidyverse");require("png");require("dplyr");require("grid");require("vegan");require("indicspecies");require("ggrepel");require("gridExtra")
+```
+
+# Load data
+```{r}
+mycols=c('black','black','black')
+
+#######################Import anaerobic growth curve data##############################################################
+grcvdata<-read.csv("./Data/growth.curves.anaerobic.csv")
+grcvdata$carbon.tech.assay<-factor(grcvdata$carbon.tech.assay, levels=c("F", "G-F5","G-F24","Ancestor"))
+grcvdata$carbon.tech.evo<-factor(grcvdata$carbon.tech.evo, levels=c("F", "G-F5","G-F24","Ancestor"))
+grcvdata$carbon.plotting.assay<-recode(grcvdata$carbon.tech.assay, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+grcvdata$carbon.plotting.evo<-recode(grcvdata$carbon.tech.evo, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+```

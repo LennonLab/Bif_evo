@@ -121,8 +121,8 @@ def index_genbank_features_multiplechroms(gb_records, feature_type, qualifier, q
                 if qualifier in feature.qualifiers:
                     for value in feature.qualifiers[qualifier]:
                         GCcount=0
-                        for (index2,pos) in enumerate(gb_record.features[index]):
-                            if gb_record[pos]=="C" or gb_record[pos]=="G":
+                        for (index2,pos) in enumerate(rec.features[index]):
+                            if rec[pos]=="C" or rec[pos]=="G":
                                 GCcount+=1
                             else:
                                 pass
