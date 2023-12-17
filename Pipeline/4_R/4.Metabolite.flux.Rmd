@@ -31,3 +31,647 @@ myhplc$evo_trt_plotting<-factor(myhplc$evo_trt_plotting,levels=c("DP0","DP5","DP
 
 
 ```
+
+# Do statistics
+# Can move all references to GF xpt to the 99.everything.else.Rmd file; data from that xpt will not be used in the text that is submitted for publication
+```{r}
+#First, we'll show whether or not the ancestor BB-12 preferentially imports glucose over fructose when both G and F are present at 38.86 mM
+var.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="Anc")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="Anc")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .2942. Homoscedastic.
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="Anc")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="Anc")$flux.fru.pos),mu=0,alternative = "t",paired=T,var.equal=T)
+#P = 0.007261. There is a significant difference between the extracellular glucose flux and the extracellular fructose flux in the ancestor bacterium.
+#wilcox.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="Anc")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="Anc")$flux.fru.pos),alternative = "t", mu = 0, paired = T, exact = NULL, correct = T, conf.int = F, conf.level = 0.95)
+
+#Also, I recognized that there is no such argument as 'var.equal' when using a PAIRED t-test, but I'm leaving it in for explicative value (for "expliciticity"???? xD). It is also good to do the variance test itself as a sanity check.
+```
+
+
+```{r}
+###############2###############################################################
+#The ancestor preferentially imports glucose. Do the evolved bacteria (evolved on F, DP5, and DP24) still prefer glucose after evolution? One might expect that, for example, bacteria evolved on fructose no longer prefer glucose.
+#We'll test the fructose-evolved populations first.
+var.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="F")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .4000. Homoscedastic.
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="F")$flux.fru.pos),mu=0,alternative = "t",paired=T,var.equal=T)
+#P = 0.0002978. There is still a significant difference between the extracellular glucose flux and the extracellular fructose flux in the F-evolved bacteria.
+#FDR #0.0002978366
+
+#We'll test the DP5-evolved populations next.
+var.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="P")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .004368. Heteroscedastic.
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="P")$flux.fru.pos),mu=0,alternative = "t",paired=T,var.equal=F)
+#P = 3.665EE-05. There is still a significant difference between the extracellular glucose flux and the extracellular fructose flux in the DP5-evolved bacteria.
+#FDR 0.0001099467
+
+#We'll test the DP24-evolved populations last.
+var.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="X")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .5905. Homoscedastic.
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="X")$flux.fru.pos),mu=0,alternative = "t",paired=T,var.equal=T)
+#P = 8.857EE-05. There is still a significant difference between the extracellular glucose flux and the extracellular fructose flux in the DP24-evolved bacteria.
+#FDR 0.0001328539
+
+#Adjust P-values for multiple tests (FDR method)
+hplcpvec2<-c(t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="F")$flux.fru.pos),mu=0,alternative = "t",paired=T,var.equal=T)$p.value,t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="P")$flux.fru.pos),mu=0,alternative = "t",paired=T,var.equal=F)$p.value,t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.glu.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="X")$flux.fru.pos),mu=0,alternative = "t",paired=T,var.equal=T)$p.value)
+hplcpvec2.adjust<-p.adjust(p=hplcpvec2, method = "BH")#cite BH&Y 2009
+hplcpvec2.adjust
+#0.0002978366 0.0001099467 0.0001328539
+```
+
+
+```{r}
+############3###################################################################
+#What about in the presence of fructose alone?
+#In that case, do the evolved bacteria have increased fructose flux relative to the ancestor?
+#Also, do fructose flux rates increase when G is removed, suggestive of an effect of metabolite repression by glucose?
+
+#First, let's test whether the ancestor has a higher F flux on F alone (fructose at 39 mM) compared to GF (glucose 39 mM + fructose 39mM)
+var.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="Anc")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="Anc")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .05057. Homoscedastic.
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="Anc")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="Anc")$flux.fru.pos),mu=0,alternative = "g",paired=F,var.equal=T)
+hplcp3.1<-t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="Anc")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="Anc")$flux.fru.pos),mu=0,alternative = "g",paired=F,var.equal=T)$p.value
+#Not paired because these are biological replicates (tube level), not evolution replicates (genotype level).
+#P = 0.04039.
+#FDR: 0.040389743 
+
+#What about the evolved bacteria? They have evolved to perhaps have measurable levels of fructose import---can we detect metabolite repression for them, i.e. can we see that fructose flux is higher in the presence of fructose 39 mM alone (F) than in the presence of glucose 39 mM + fructose 39 mM (GF)?
+
+#F-evolved populations:
+var.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="F")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .4977. Homoscedastic.
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="F")$flux.fru.pos),mu=0,alternative = "g",paired=T,var.equal=T)
+hplcp3.2<-t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="F")$flux.fru.pos),mu=0,alternative = "g",paired=T,var.equal=T)$p.value
+#P < .05. F import is higher in the absence of G (10.97 vs. 4.28). Suggests there is meaningful metabolite repression.
+#FDR: 0.001102758 
+
+#DP5-evolved populations:
+var.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="P")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .0009092. Heteroscedastic.
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="P")$flux.fru.pos),mu=0,alternative = "g",paired=T,var.equal=F)
+hplcp3.3<-t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="P")$flux.fru.pos),mu=0,alternative = "g",paired=T,var.equal=F)$p.value
+#P = < .05. F import is higher in the absence of G (5.83 vs. 0.41). Suggests there is meaningful metabolite repression.
+#FDR:  0.002433313 
+
+#DP24-evolved populations:
+var.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="X")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .8434. Homoscedastic.
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="X")$flux.fru.pos),mu=0,alternative = "g",paired=T,var.equal=T)
+hplcp3.4<-t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.fru.pos),y=c(filter(myhplc, condition_short=="GF", evo_trt=="X")$flux.fru.pos),mu=0,alternative = "g",paired=T,var.equal=T)$p.value
+#P < .05. F import is higher in the absence of G (9.20 vs. 3.42). Suggests there is meaningful metabolite repression.
+#FDR: 0.001102758
+
+hplcpvec3a<-c(hplcp3.1,hplcp3.2,hplcp3.3,hplcp3.4)
+hplcpvec3a.adjust<-p.adjust(p=hplcpvec3a, method = "BH")#cite BH&Y 2009
+hplcpvec3a
+hplcpvec3a.adjust
+```
+
+
+```{r}
+#####3b#########################################################################
+#Importantly, can we detect an increase in fructose import rate of the evolved bacteria, relative to the ancestor?
+
+#First, I need to calculate the average fructose import rate by the ancestor and use it as my mu value for 1-sample t-tests.
+anc.flux.fru_F<-mean(c(filter(myhplc, condition_short=="F",evo_trt=="Anc")$flux.fru.pos))
+anc.flux.fru_GF<-mean(c(filter(myhplc, condition_short=="GF",evo_trt=="Anc")$flux.fru.pos))
+
+#Considering only GF condition.
+#F evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.fru.pos),mu=anc.flux.fru_GF,alternative = "g")
+hplcp3.5<-t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.fru.pos),mu=anc.flux.fru_GF,alternative = "g")$p.value
+#P = 0.02826. F import after evolution is significantly higher in the presence of glucose BUT NOT AFTER fdr CORRECTION:
+#FDR: 0.056513990 
+
+#DP5 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.fru.pos),mu=anc.flux.fru_GF,alternative = "g")
+hplcp3.6<-t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.fru.pos),mu=anc.flux.fru_GF,alternative = "g")$p.value
+#P = 0.9979. F import after evolution is not significantly higher in the presence of glucose.
+#FDR:  0.997888364 
+
+#DP24 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.fru.pos),mu=anc.flux.fru_GF,alternative = "g")
+hplcp3.7<-t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.fru.pos),mu=anc.flux.fru_GF,alternative = "g")$p.value
+#P = 0.04082. F import after evolution is significantly higher in the presence of glucose. (This will prolly change after correcting for multiply testing, though.)
+#FDR: 0.061233424 
+
+
+#Now we'll consider the F condition.
+#F evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.fru.pos),mu=anc.flux.fru_F,alternative = "g")
+hplcp3.8<-t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.fru.pos),mu=anc.flux.fru_F,alternative = "g")$p.value
+#P < .05. F import after evolution is significantly higher in the absence of glucose.
+#FDR: 0.005412862 
+
+#DP5 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.fru.pos),mu=anc.flux.fru_F,alternative = "g")
+hplcp3.9<-t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.fru.pos),mu=anc.flux.fru_F,alternative = "g")$p.value
+#P = 0.1165 F import after evolution is NOT significantly higher in the absence of glucose than that of the ancestor in the absence of glucose.
+#THIS MAKES SENSE. DP5 can be imported directly. Meanwhile, DP24 pops are surviving on the dregs of degraded molecules.
+#FDR: 0.139784891 
+
+#DP24 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.fru.pos),mu=anc.flux.fru_F,alternative = "g")
+hplcp3.10<-t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.fru.pos),mu=anc.flux.fru_F,alternative = "g")$p.value
+#P < .05. F import after evolution is significantly higher in the absence of glucose.
+#FDR: 0.004927588
+
+
+
+hplcpvec3b<-c(hplcp3.5,hplcp3.6,hplcp3.7,hplcp3.8,hplcp3.9,hplcp3.10)
+hplcpvec3b.adjust<-p.adjust(p=hplcpvec3b, method = "BH")#cite BH&Y 2009
+hplcpvec3b
+hplcpvec3b.adjust
+#0.056513990 0.997888364 0.061233424 0.005412862 0.139784891 0.004927588
+```
+
+
+```{r}
+######4#########################################################################
+#Do the evolved populations differ in their fructose import rates (in the presence of F alone)?
+hplc4.1df<-filter(myhplc,condition_short=="F",evo_trt!="Anc")
+hplc4.1aov<-aov(hplc4.1df$flux.fru.pos ~ hplc4.1df$evo_trt)
+summary(hplc4.1aov)
+TukeyHSD(hplc4.1aov)
+#Tukey letters: F: A  DP5: B  DP24: A,B
+#Interpretation: F pops were selected to import fructose. DP5 pops were selected to import short oligomers. This likely improved the function of lacY for importing oligomers, but the kinds of mutations that fixed were significantly less beneficial for importing fructose than those that fixed in the fructose-evolved populations. DP24 populations are somewhere intermediate. They're likely surviving on scraps of degraded big oligomers, which prolly includes both small oligomers and monomers.
+#Padj values from Tukey HSD:
+#P-F 0.0247383
+#X-F 0.5942214
+#X-P 0.1725517
+
+#Why not also investigate the ANOVA outcome when we look at the GF cdtn
+hplc4.2df<-filter(myhplc,condition_short=="GF",evo_trt!="Anc")
+hplc4.2aov<-aov(hplc4.2df$flux.fru.pos ~ hplc4.2df$evo_trt)
+summary(hplc4.2aov)
+TukeyHSD(hplc4.2aov)
+#Same story.
+#Padj:
+#.01477
+#.77435
+#.06358
+```
+
+
+```{r}
+######5#########################################################################
+#Now I want to compare the fructose import rate between fructose-evolved populations that have LacY mutations to fructose-evolved pops that have GlcU mutations
+var.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F",Importer=="lacY")$flux.fru.pos),y=c(filter(myhplc, condition_short=="F", evo_trt=="F",Importer=="glcU")$flux.fru.pos),ratio=1,alternative = "t")
+#P = .1623. Homoscedastic.
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F",Importer=="lacY")$flux.fru.pos),y=c(filter(myhplc, condition_short=="F", evo_trt=="F",Importer=="glcU")$flux.fru.pos),mu=0,alternative = "t",paired=F,var.equal=T)
+mean(c(filter(myhplc, condition_short=="F",evo_trt=="F",Importer=="lacY")$flux.fru.pos))
+mean(c(filter(myhplc, condition_short=="F",evo_trt=="F",Importer=="glcU")$flux.fru.pos))
+#P = 0.006563. F import is higher for the populations with lacY mutations than for those with glcU mutations (14.51 fmol/cell/hr vs 7.43 fmol/cell/hr)
+```
+
+
+```{r}
+##########6#####################################################################
+#Next, I'll ask whether evolved bacteria have a higher flux of lact and ace production than the ancestor.
+
+#Let's consider the general GF diet first.
+#Lactate?
+anc.flux.lact_GF<-mean(c(filter(myhplc, condition_short=="GF",evo_trt=="Anc")$flux.lact.0))
+
+
+#F evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.lact.0),mu=anc.flux.lact_GF,alternative = "g")
+#P = 0.00002354. Lact export after evolution is significantly higher in GF cdtn.
+#FDR: 7.060763e-05
+
+#DP5 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.lact.0),mu=anc.flux.lact_GF,alternative = "g")
+#P = 0.0009305. Lact export after evolution is significantly higher in GF cdtn.
+#FDR: 1.861000e-03
+
+#DP24 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.lact.0),mu=anc.flux.lact_GF,alternative = "g")
+#P = 7.845EE-06. Lact export after evolution is significantly higher in GF cdtn.
+#FDR: 4.707231e-05
+
+####
+#Let's now consider acetate
+#How about in general, i.e. with glucose around (GF condition)?
+anc.flux.ace_GF<-mean(c(filter(myhplc, condition_short=="GF",evo_trt=="Anc")$flux.ace.0))
+
+#F evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.ace.0),mu=anc.flux.ace_GF,alternative = "g")
+#P = 4.615EE-05 Ace export after evolution is significantly higher in GF cdtn.
+#FDR: 2.367139e-03 
+
+#DP5 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.ace.0),mu=anc.flux.ace_GF,alternative = "g")
+#P = 6.815ee-06. Ace export after evolution is significantly higher in GF cdtn.
+#FDR: 5.489388e-02 
+
+#DP24 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.ace.0),mu=anc.flux.ace_GF,alternative = "g")
+#P = 4.027EE-06. Ace export after evolution is significantly higher in GF cdtn.
+#FDR:2.367139e-03
+
+hplcpvec6.1<-c(t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.lact.0),mu=anc.flux.lact_GF,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.lact.0),mu=anc.flux.lact_GF,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.lact.0),mu=anc.flux.lact_GF,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.ace.0),mu=anc.flux.ace_F,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.ace.0),mu=anc.flux.ace_F,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.ace.0),mu=anc.flux.ace_F,alternative = "g")$p.value)
+hplcpvec6.1.adjust<-p.adjust(p=hplcpvec6.1, method = "BH")#cite BH&Y 2009
+hplcpvec6.1
+hplcpvec6.1.adjust
+# 7.060763e-05 1.861000e-03 4.707231e-05 2.367139e-03 5.489388e-02 2.367139e-03
+```
+
+
+```{r}
+#####Next, we need to consider the experiment with 38.9 F as the sole carbon source.
+
+#Does lactate production increase after evolution when we consider the fructose condition?
+anc.flux.lact_F<-mean(c(filter(myhplc, condition_short=="F",evo_trt=="Anc")$flux.lact.0))
+
+#F evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.lact.0),mu=anc.flux.lact_F,alternative = "g")
+#P = 0.0132. Lact export after evolution is significantly higher in F cdtn.
+#FDR: 1.584397e-02
+
+#DP5 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.lact.0),mu=anc.flux.lact_F,alternative = "g")
+#P = 0.003382. Lact export after evolution is significantly higher in F cdtn.
+#FDR: 3.382046e-02
+
+#DP24 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.lact.0),mu=anc.flux.lact_F,alternative = "g")
+#P = 0.001789. Lact export after evolution is significantly higher in F cdtn.
+#FDR: 2.684201e-03
+
+####
+#Now, does acetate production increase after evolution when we consider the fructose condition?
+anc.flux.ace_F<-mean(c(filter(myhplc, condition_short=="F",evo_trt=="Anc")$flux.ace.0))
+
+#F evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.ace.0),mu=anc.flux.ace_F,alternative = "g")
+#P = 0.0009068. Ace export after evolution is significantly higher in F cdtn.
+#FDR: 1.639248e-02 
+
+#DP5 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.ace.0),mu=anc.flux.ace_F,alternative = "g")
+#P = 0.01672. Ace export after evolution is significantly higher in F cdtn.
+#FDR: 3.579952e-02 
+
+#DP24 evolved vs. ancestor
+t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.ace.0),mu=anc.flux.ace_F,alternative = "g")
+#P = 0.0007976. Ace export after evolution is significantly higher in F cdtn.
+#FDR: 2.793390e-03
+
+hplcpvec6.2<-c(t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="F")$flux.ace.0),mu=anc.flux.ace_GF,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="P")$flux.ace.0),mu=anc.flux.ace_GF,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="GF",evo_trt=="X")$flux.ace.0),mu=anc.flux.ace_GF,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="F")$flux.lact.0),mu=anc.flux.lact_F,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="P")$flux.lact.0),mu=anc.flux.lact_F,alternative = "g")$p.value,t.test(x=c(filter(myhplc, condition_short=="F",evo_trt=="X")$flux.lact.0),mu=anc.flux.lact_F,alternative = "g")$p.value)
+hplcpvec6.2.adjust<-p.adjust(p=hplcpvec6.2, method = "BH")#cite BH&Y 2009
+hplcpvec6.2
+hplcpvec6.2.adjust
+#9.229471e-05 2.044568e-05 2.044568e-05
+```
+
+
+```{r}
+#####7##########################################################################
+#Last, we'll ask whether lact and ace fluxes are differ depending on the evolution treatment. So, 4 ANOVAs (2 cdtns, 2 metabolites).
+
+#Do the evolved populations differ in their lactate export rates in the general GF cdtn?
+hplc7.1df<-filter(myhplc,condition_short=="GF",evo_trt!="Anc")
+hplc7.1aov<-aov(hplc7.1df$flux.lact.0 ~ hplc7.1df$evo_trt)
+summary(hplc7.1aov)
+TukeyHSD(hplc7.1aov)
+#Tukey letters: F: A  DP5: B  DP24: A
+#Interpretation: F and DP24 pops are better at making lactate from glucose. I think it prolly means that F and DP24 are better at importing and metabolizing monomers, while DP5 have evolved to specialize on short oligomers. However, we would need to do another entire experiment to test whether lact and ace production are higher for DP5 pops than other pops when DP5 is the C src.
+#Padj values from Tukey HSD:
+#P-F 0.0004375
+#X-F 0.3846448
+#X-P 0.0102524
+
+#Now we'll compare the evolved populations' abilities to produce lactate when the carbon source is fructose alone. Expectation would be that DP5 populations would be at even more of disadvantage now.
+hplc7.2df<-filter(myhplc,condition_short=="F",evo_trt!="Anc")
+hplc7.2aov<-aov(hplc7.2df$flux.lact.0 ~ hplc7.2df$evo_trt)
+summary(hplc7.2aov)
+TukeyHSD(hplc7.2aov)
+#However, there are actually now no signif differences. ANOVA P = 0.255
+
+
+#Do the evolved populations differ in their acetate export rates in the general GF cdtn?
+hplc7.3df<-filter(myhplc,condition_short=="GF",evo_trt!="Anc")
+hplc7.3aov<-aov(hplc7.3df$flux.ace.0 ~ hplc7.3df$evo_trt)
+summary(hplc7.3aov)
+TukeyHSD(hplc7.3aov)
+#Tukey letters: F: A  DP5: B  DP24: A,B
+#Interpretation: F pops are better at producing acetate from GF than are the other evolved populations. Could make sense, as F populations have been selected to import and use solely monomers.
+#Padj values from Tukey HSD:
+#P-F 0.0057101
+#X-F 0.2898775
+#X-P 0.1474614
+
+#Now we'll compare the evolved populations' abilities to produce lactate when the carbon source is fructose alone. Expectation would be that non-F populations would be at even more of disadvantage now.
+hplc7.4df<-filter(myhplc,condition_short=="F",evo_trt!="Anc")
+hplc7.4aov<-aov(hplc7.4df$flux.ace.0 ~ hplc7.4df$evo_trt)
+summary(hplc7.4aov)
+TukeyHSD(hplc7.4aov)
+#However, there are actually now no signif differences. ANOVA P = 0.078, and all Tukey HSD Padj values > 0.1
+
+```
+# Make plots
+```{r}
+hlpc.colors<-c("darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
+
+hplcdataFall<-filter(myhplc, condition_short=="F")
+hplcdataGFall<-filter(myhplc, condition_short=="GF")
+hplcdataF<-filter(myhplc, condition_short=="F", evo_trt!="Anc")
+hplcdataF$evo_trt_plotting<-droplevels(hplcdataF$evo_trt_plotting)
+hplcdataGF<-filter(myhplc, condition_short=="GF", evo_trt!="Anc")
+hplcdataGF$evo_trt_plotting<-droplevels(hplcdataGF$evo_trt_plotting)
+
+#Make Fig. 2.3
+hplclactplot_F <- ggplot(hplcdataF, aes(x=evo_trt_plotting, y=flux.lact.0))
+###
+hplclactpanel_F <- hplclactplot_F + geom_jitter(aes(shape = evo_trt_plotting, color = evo_trt_plotting), position = position_jitterdodge(jitter.width = 0.8, dodge.width = 0.7), size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(myhplc, condition_short=="F", evo_trt_plotting=="Ancestor")$flux.lact.0), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = evo_trt_plotting),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.54,16),breaks=c(0,5,10,15), expand = c(0,0)) +
+  #labs(x="\nEvolution diet",y="Lactate flux (fmol/cell/hr)") +
+  xlab("\nEvolution diet")+
+  ylab( expression(atop(paste("Lactate flux (fmol/cell * ",hr^{-1},")"))))+
+  annotate("text",x=0.5,y=15.5,label="a",size=12,color="black")+
+  #annotate("text",x=1.7,y=0.1,label="B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+hplclactpanel_F
+
+hplcaceplot_F <- ggplot(hplcdataF, aes(x=evo_trt_plotting, y=flux.ace.0))
+###
+hplcacepanel_F <- hplcaceplot_F + geom_jitter(aes(shape = evo_trt_plotting, color = evo_trt_plotting), position = position_jitterdodge(jitter.width = 0.8, dodge.width = 0.7), size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(myhplc, condition_short=="F", evo_trt_plotting=="Ancestor")$flux.ace.0), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = evo_trt_plotting),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.04,28.4),breaks=c(0,5,10,15,20,25), expand = c(0,0)) +
+  labs(x="\nEvolution diet",y="Acetate flux (fmol/cell/hr)") +
+  xlab("\nEvolution diet")+
+  ylab( expression(atop(paste("Acetate flux (fmol/cell * ",hr^{-1},")"))))+
+  annotate("text",x=0.5,y=27.3,label="b",size=12,color="black")+
+  #annotate("text",x=1.7,y=0.1,label="B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+hplcacepanel_F
+
+grid.arrange(hplclactpanel_F,hplcacepanel_F,nrow=1)
+
+
+
+
+#Now make the supp figure: metabolite production on the GF HPLC diet
+#Fig. B.5
+hplclactplot_GF <- ggplot(hplcdataGF, aes(x=evo_trt_plotting, y=flux.lact.0))
+###
+hplclactpanel_GF <- hplclactplot_GF + geom_jitter(aes(shape = evo_trt_plotting, color = evo_trt_plotting), position = position_jitterdodge(jitter.width = 0.85, dodge.width = 0.7), size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(myhplc, condition_short=="GF", evo_trt_plotting=="Ancestor")$flux.lact.0), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = evo_trt_plotting),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.04,26.5),breaks=c(0,5,10,15,20,25), expand = c(0,0)) +
+  #labs(x="\nEvolution diet",y="Lactate flux (fmol/cell/hr)") +
+  xlab("\nEvolution diet")+
+  ylab( expression(atop(paste("Lactate flux (fmol/cell * ",hr^{-1},")"))))+
+  annotate("text",x=0.5,y=25,label="a",size=12,color="black")+
+  annotate("text",x=0.7,y=16.2,label="A",size=12,color="black")+
+  annotate("text",x=1.7,y=8.1,label="B",size=12,color="black")+
+  annotate("text",x=2.7,y=16.2,label="A",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+hplclactpanel_GF
+
+hplcaceplot_GF <- ggplot(hplcdataGF, aes(x=evo_trt_plotting, y=flux.ace.0))
+###
+hplcacepanel_GF <- hplcaceplot_GF + geom_jitter(aes(shape = evo_trt_plotting, color = evo_trt_plotting), position = position_jitterdodge(jitter.width = 0.9, dodge.width = 0.7), size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(myhplc, condition_short=="GF", evo_trt_plotting=="Ancestor")$flux.ace.0), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = evo_trt_plotting),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.04,41.5),breaks=c(0,10,20,30,40), expand = c(0,0)) +
+  #labs(x="\nEvolution diet",y="Acetate flux (fmol/cell/hr)") +
+  xlab("\nEvolution diet")+
+  ylab( expression(atop(paste("Acetate flux (fmol/cell * ",hr^{-1},")"))))+
+  annotate("text",x=0.5,y=40,label="b",size=12,color="black")+
+  annotate("text",x=0.7,y=27.6,label="A",size=12,color="black")+
+  annotate("text",x=1.7,y=20.6,label="B",size=12,color="black")+
+  annotate("text",x=2.65,y=24.2,label="A,B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+hplcacepanel_GF
+
+grid.arrange(hplclactpanel_GF,hplcacepanel_GF,nrow=1)
+
+
+
+####################################################
+#Make fig. 2.9
+#Compare anc import of glu to import of fru on the GF hplc diet
+#hplcdataGFanc<-filter(hplcdataGFall, evo_trt=="Anc")
+
+mycols2.9<-c('black','black','black','black','black','black','black','black')
+
+fig2.9df<-read.csv("~/GitHub/Bifidobacterium/datafiles/fig.2.9.csv")
+fig2.9df$metabolite<-recode(fig2.9df$metabolite, "F" = "Fructose", "G" = "Glucose")
+fig2.9df$metabolite<-factor(fig2.9df$metabolite, levels=c("Glucose","Fructose"))
+
+fig2.9 <- ggplot(fig2.9df, aes(x=metabolite, y=flux.data.col))
+###
+fig2.9 + geom_jitter(aes(shape = metabolite, color = metabolite), position = position_jitterdodge(jitter.width = 0.9, dodge.width = 0.7), size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  #geom_hline(yintercept = mean(filter(myhplc, condition_short=="GF", evo_trt_plotting=="Ancestor")$flux.ace.0), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = metabolite),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols2.9) +
+  scale_y_continuous(limits = c(-0.04,9.5),breaks=c(0,2.5,5,7.5), expand = c(0,0)) +
+  #labs(x="",y="Flux (fmol/cell/hr)") +
+  xlab(" ")+
+  ylab( expression(atop(paste("Flux (fmol/cell * ",hr^{-1},")"))))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+
+#Make fig. B.13
+#It's 3 panels stacked vertically.
+#Each panel is gonna be like 2.9 is.
+#But then add the panel code that you used for fig. b.5
+
+mycolsb.13<-c('black','black','black','black','black','black','black','black','black','black','black','black','black','black','black','black')
+anccolsb.13<-c("darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
+
+figb.13adf<-read.csv("~/GitHub/Bifidobacterium/datafiles/fig.b.13a.csv")
+figb.13adf$metabolite<-recode(figb.13adf$metabolite, "F" = "Fructose", "G" = "Glucose")
+figb.13adf$metabolite<-factor(figb.13adf$metabolite, levels=c("Glucose","Fructose"))
+
+figb.13a <- ggplot(figb.13adf, aes(x=metabolite, y=flux.data.col))
+###
+figb.13apanel <- figb.13a + geom_jitter(aes(shape = metabolite, color = metabolite), position = position_jitterdodge(jitter.width = 0.9, dodge.width = 0.7), size = 5.5, stroke = 2) +
+  geom_errorbar(data=figb.13adf, mapping = aes(x=metabolite,ymin=flux.anc.data.col,ymax=flux.anc.data.col),color=anccolsb.13,lwd=2.2,linetype=117) +
+  #geom_hline(yintercept = mean(filter(myhplc, condition_short=="GF", evo_trt_plotting=="Ancestor")$flux.ace.0), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = metabolite),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycolsb.13) +
+  scale_y_continuous(limits = c(-0.5,20.35),breaks=c(0,5,10,15,20), expand = c(0,0)) +
+  #labs(x="",y="Flux (fmol/cell/hr)") +
+  xlab(" ")+
+  ylab( expression(atop(paste("Flux (fmol/cell * ",hr^{-1},")"))))+
+  annotate("text",x=0.5,y=19.3,label="a",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+figb.13apanel
+
+
+figb.13bdf<-read.csv("~/GitHub/Bifidobacterium/datafiles/fig.b.13b.csv")
+figb.13bdf$metabolite<-recode(figb.13bdf$metabolite, "F" = "Fructose", "G" = "Glucose")
+figb.13bdf$metabolite<-factor(figb.13bdf$metabolite, levels=c("Glucose","Fructose"))
+
+figb.13b <- ggplot(figb.13bdf, aes(x=metabolite, y=flux.data.col))
+###
+figb.13bpanel <- figb.13b + geom_jitter(aes(shape = metabolite, color = metabolite), position = position_jitterdodge(jitter.width = 0.9, dodge.width = 0.7), size = 5.5, stroke = 2) +
+  geom_errorbar(data=figb.13bdf, mapping = aes(x=metabolite,ymin=flux.anc.data.col,ymax=flux.anc.data.col),color=anccolsb.13,lwd=2.2,linetype=117) +
+  #geom_hline(yintercept = mean(filter(myhplc, condition_short=="GF", evo_trt_plotting=="Ancestor")$flux.ace.0), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = metabolite),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycolsb.13) +
+  scale_y_continuous(limits = c(-0.5,20.35),breaks=c(0,5,10,15,20), expand = c(0,0)) +
+  annotate("text",x=0.5,y=19.3,label="b",size=12,color="black")+
+  xlab(" ")+
+  ylab( expression(atop(paste("Flux (fmol/cell * ",hr^{-1},")"))))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+figb.13bpanel
+
+figb.13cdf<-read.csv("~/GitHub/Bifidobacterium/datafiles/fig.b.13c.csv")
+figb.13cdf$metabolite<-recode(figb.13cdf$metabolite, "F" = "Fructose", "G" = "Glucose")
+figb.13cdf$metabolite<-factor(figb.13cdf$metabolite, levels=c("Glucose","Fructose"))
+
+figb.13c <- ggplot(figb.13cdf, aes(x=metabolite, y=flux.data.col))
+###
+figb.13cpanel <- figb.13c + geom_jitter(aes(shape = metabolite, color = metabolite), position = position_jitterdodge(jitter.width = 0.9, dodge.width = 0.7), size = 5.5, stroke = 2) +
+  geom_errorbar(data=figb.13cdf, mapping = aes(x=metabolite,ymin=flux.anc.data.col,ymax=flux.anc.data.col),color=anccolsb.13,lwd=2.2,linetype=117) +
+  #geom_hline(yintercept = mean(filter(myhplc, condition_short=="GF", evo_trt_plotting=="Ancestor")$flux.ace.0), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = metabolite),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycolsb.13) +
+  scale_y_continuous(limits = c(-0.5,20.35),breaks=c(0,5,10,15,20), expand = c(0,0)) +
+  annotate("text",x=0.5,y=19.3,label="c",size=12,color="black")+
+  xlab(" ")+
+  ylab( expression(atop(paste("Flux (fmol/cell * ",hr^{-1},")"))))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+figb.13cpanel
+
+grid.arrange(figb.13apanel,figb.13bpanel,figb.13cpanel,nrow=3)
+
+
+#Make fig. 2.10
+#It's a simple ANOVA figure with 3 columns. It has one wide grey dashed line for the anc value
+
+fig2.10cols<-c("darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
+
+fig2.10df<-filter(myhplc, condition_short=="F" & evo_trt_plotting!="Ancestor")
+
+fig2.10plot <- ggplot(fig2.10df, aes(x=evo_trt_plotting, y=flux.fru.pos))
+fig2.10plot + geom_jitter(
+  aes(shape = evo_trt_plotting, color = evo_trt_plotting),
+  position = position_jitterdodge(jitter.width = 1.5, dodge.width = 0.7),
+  size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(myhplc, condition_short=="F" & evo_trt_plotting=="Ancestor")$flux.fru.pos), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = evo_trt_plotting),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.04,19),breaks=c(0,5,10,15), expand = c(0,0)) +
+  #labs(x="\nEvolution diet",y="Fructose flux (fmol/cell/hr)") +
+  xlab("\nEvolution diet")+
+  ylab( expression(atop(paste("Fructose flux (fmol/cell * ",hr^{-1},")"))))+
+  annotate("text",x=0.7,y=13.5,label="A",size=12,color="black")+
+  annotate("text",x=1.7,y=9.0,label="B",size=12,color="black")+
+  annotate("text",x=2.7,y=11.4,label="A,B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+
+
+
+#Make fig. 2.11
+#It's comparing the lacY vs. glcU F-evolved pops
+fig2.11cols<-c("darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
+
+fig2.11df<-filter(myhplc, condition_short=="F" & evo_trt_plotting=="DP0")
+fig2.11df$Importer<-recode(fig2.11df$Importer, "glcU" = "GlcU", "lacY" = "LacY")
+fig2.11df$Importer<-factor(fig2.11df$Importer, levels=c("LacY", "GlcU"))
+
+
+fig2.11plot <- ggplot(fig2.11df, aes(x=Importer, y=flux.fru.pos))
+fig2.11plot + geom_jitter(
+  aes(shape = Importer, color = Importer),
+  position = position_jitterdodge(jitter.width = 1, dodge.width = 0.7),
+  size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(myhplc, condition_short=="F" & evo_trt_plotting=="Ancestor")$flux.fru.pos), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = Importer),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.04,19),breaks=c(0,5,10,15), expand = c(0,0)) +
+  #labs(x="\nMutated importer",y="Fructose flux (fmol/cell/hr\n")) +
+  xlab("\nMutated importer")+
+  ylab( expression(atop(paste("Fructose flux (fmol/cell * ",hr^{-1},")"))))+
+  #annotate("text",x=0.7,y=13.5,label="A",size=12,color="black")+
+  #annotate("text",x=1.7,y=9.0,label="B",size=12,color="black")+
+  #annotate("text",x=2.7,y=11.4,label="A,B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 10, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 10, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 2.5), axis.ticks.x = element_line(color = "black", size = 2.5), axis.ticks.length.x=unit(0.5, "cm"),axis.ticks.length.y=unit(0.5, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+```
+
+
