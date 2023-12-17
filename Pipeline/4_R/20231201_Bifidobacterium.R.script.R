@@ -16,7 +16,7 @@ mycols=c('black','black','black')
 mycols_breakout=c('black','black','black','black','black','black','black','black')
 #Import ancestor data
 #Import basic OD data on the 3 substrates
-mydf0<-read_csv("./Data/breakout_20210512.csv")
+mydf0<-read.csv("./Data/breakout_20210512.csv")
 mydf0$carbon2<-recode(mydf0$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
 mydf0$carbon2<-factor(mydf0$carbon2, levels=c("DP0","DP5","DP24"))
 mydf0$carbon<-factor(mydf0$carbon, levels=c("Monomer","Low-DP","High-DP"))
@@ -123,7 +123,6 @@ grcvdata$carbon.plotting.evo<-recode(grcvdata$carbon.tech.evo, "F" = "DP0", "G-F
 
 
 
-#art h
 ###################Plots####################
 #fig
 #Make a plot of the ancestor data: OD when grown on the 3 basic substrates

@@ -22,7 +22,7 @@ require("ggplot2");require("tidyverse");require("png");require("dplyr");require(
 # Load data
 ```{r}
 mycols=c('black','black','black')
-
+mycols_breakout=c('black','black','black','black','black','black','black','black')
 #######################Import anaerobic growth curve data##############################################################
 grcvdata<-read.csv("./Data/growth.curves.anaerobic.csv")
 grcvdata$carbon.tech.assay<-factor(grcvdata$carbon.tech.assay, levels=c("F", "G-F5","G-F24","Ancestor"))
@@ -30,3 +30,220 @@ grcvdata$carbon.tech.evo<-factor(grcvdata$carbon.tech.evo, levels=c("F", "G-F5",
 grcvdata$carbon.plotting.assay<-recode(grcvdata$carbon.tech.assay, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
 grcvdata$carbon.plotting.evo<-recode(grcvdata$carbon.tech.evo, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
 ```
+
+# Do statistical tests
+```{r}
+grcvdataF<-filter(grcvdata, carbon.tech.assay=="F", carbon.tech.evo!="Ancestor")
+grcvFaov<-aov(grcvdataF$umax ~ grcvdataF$carbon.tech.evo)
+summary(grcvFaov)
+TukeyHSD(grcvFaov)
+```
+
+
+```{r}
+grcvdataP<-filter(grcvdata, carbon.tech.assay=="G-F5", carbon.tech.evo!="Ancestor")
+grcvPaov<-aov(grcvdataP$umax ~ grcvdataP$carbon.tech.evo)
+summary(grcvPaov)
+TukeyHSD(grcvPaov)
+```
+
+
+```{r}
+grcvdataX<-filter(grcvdata, carbon.tech.assay=="G-F24", carbon.tech.evo!="Ancestor")
+grcvXaov<-aov(grcvdataX$umax ~ grcvdataX$carbon.tech.evo)
+summary(grcvXaov)
+TukeyHSD(grcvXaov)
+```
+
+
+```{r}
+#Now, I will do the one-sample t-tests
+#Did growth rate on fructose increase for the difference populations?
+#Calculate the ancestor value
+ancgrrF<-mean(c(filter(grcvdata, carbon.plotting.assay=="DP0",carbon.plotting.evo=="Ancestor")$umax))
+
+#Now do 3 one-sample t-tests
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP0", carbon.plotting.evo=="DP0")$umax),mu=ancgrrF,alternative = 'g')
+grrFp1<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP0", carbon.plotting.evo=="DP0")$umax),mu=ancgrrF,alternative = 'g')$p.value
+#p < 0.05
+
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP0", carbon.plotting.evo=="DP5")$umax),mu=ancgrrF,alternative = 'g')
+grrFp2<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP0", carbon.plotting.evo=="DP5")$umax),mu=ancgrrF,alternative = 'g')$p.value
+#p < 0.05
+
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP0", carbon.plotting.evo=="DP24")$umax),mu=ancgrrF,alternative = 'g')
+grrFp3<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP0", carbon.plotting.evo=="DP24")$umax),mu=ancgrrF,alternative = 'g')$p.value
+#p < 0.05
+
+grrFpvec<-c(grrFp1,grrFp2,grrFp3)
+grrFpvec.adjust<-p.adjust(p=grrFpvec, method = "BH")#cite BH&Y 2009
+grrFpvec.adjust
+#FDR values:
+```
+
+
+```{r}
+#Did growth rate on DP5 increase for the difference populations?
+#Calculate the ancestor value
+ancgrrP<-mean(c(filter(grcvdata, carbon.plotting.assay=="DP5",carbon.plotting.evo=="Ancestor")$umax))
+
+#Now do 3 one-sample t-tests
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP5", carbon.plotting.evo=="DP0")$umax),mu=ancgrrP,alternative = 'g')
+grrPp1<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP5", carbon.plotting.evo=="DP0")$umax),mu=ancgrrP,alternative = 'g')$p.value
+#p < 0.05
+
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP5", carbon.plotting.evo=="DP5")$umax),mu=ancgrrP,alternative = 'g')
+grrPp2<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP5", carbon.plotting.evo=="DP5")$umax),mu=ancgrrP,alternative = 'g')$p.value
+#p < 0.05
+
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP5", carbon.plotting.evo=="DP24")$umax),mu=ancgrrP,alternative = 'g')
+grrPp3<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP5", carbon.plotting.evo=="DP24")$umax),mu=ancgrrP,alternative = 'g')$p.value
+#p < 0.05
+
+grrPpvec<-c(grrPp1,grrPp2,grrPp3)
+grrPpvec.adjust<-p.adjust(p=grrPpvec, method = "BH")#cite BH&Y 2009
+grrPpvec.adjust
+#FDR values:
+```
+
+
+```{r}
+#Did growth rate on DP24 increase for the different populations?
+#Calculate the ancestor value
+ancgrrX<-mean(c(filter(grcvdata, carbon.plotting.assay=="DP24",carbon.plotting.evo=="Ancestor")$umax))
+
+#Now do 3 one-sample t-tests
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP24", carbon.plotting.evo=="DP0")$umax),mu=ancgrrX,alternative = 'g')
+grrXp1<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP24", carbon.plotting.evo=="DP0")$umax),mu=ancgrrX,alternative = 'g')$p.value
+#p < 0.05
+
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP24", carbon.plotting.evo=="DP5")$umax),mu=ancgrrX,alternative = 'g')
+grrXp2<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP24", carbon.plotting.evo=="DP5")$umax),mu=ancgrrX,alternative = 'g')$p.value
+#p < 0.05
+
+t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP24", carbon.plotting.evo=="DP24")$umax),mu=ancgrrX,alternative = 'g')
+grrXp3<-t.test(x=c(filter(grcvdata, carbon.plotting.assay == "DP24", carbon.plotting.evo=="DP24")$umax),mu=ancgrrX,alternative = 'g')$p.value
+#p < 0.05
+
+grrXpvec<-c(grrXp1,grrXp2,grrXp3)
+grrXpvec.adjust<-p.adjust(p=grrXpvec, method = "BH")#cite BH&Y 2009
+grrXpvec.adjust
+#FDR values: 0.0006389239 0.0028371206 0.0028371206
+```
+
+# Now compare all 3x3 evolution-assay treatment combinations' growth rate against the ancestor growth rate (on that assay diet)
+```{r}
+# This is more conservative because now we are doing the P value correction for a total of 9 P-values.
+grr9onesamplespvec<-c(grrFp1,grrFp2,grrFp3,grrPp1,grrPp2,grrPp3,grrXp1,grrXp2,grrXp3)
+grr9onesamplespvec.adjust<-p.adjust(p=grr9onesamplespvec, method = "BH")#cite BH&Y 2009
+grr9onesamplespvec.adjust
+#FDR values: 3.833544e-04 4.255681e-03 3.624473e-04 6.305623e-03 1.240404e-06 1.043232e-04 8.668466e-03 8.946585e-03 3.624473e-04
+#In every case, evolved populations exhibited higher maximum growth rate than the ancestor (FDR < 0.009)
+```
+
+# Plots
+```{r}
+grcv.colors<-c("darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
+
+grcvdataF<-filter(grcvdata, carbon.tech.assay=="F", carbon.tech.evo!="Ancestor")
+
+grcvplot_assay.F <- ggplot(grcvdataF, aes(x=carbon.plotting.evo, y=umax))
+grcvpanel_assay.F <- grcvplot_assay.F + geom_jitter(
+  aes(shape = carbon.tech.evo, color = carbon.tech.evo),
+  position = position_jitterdodge(jitter.width = 1.5, dodge.width = 0.7),
+  size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(grcvdata, carbon.tech.assay=="F", carbon.tech.evo=="Ancestor")$umax), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = carbon.tech.evo),
+    fun.data = "mean_se", fun.args = list(mult = (0)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "point", size = 10, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  stat_summary(
+    aes(color = carbon.tech.evo),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "linerange", size = 3,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.01,.3),breaks=c(0,.1,.2), expand = c(0,0)) +
+  labs(x="\n",y="Max growth rate on DP0") +
+  annotate("text",x=0.7,y=0.16,label="A",size=12,color="black")+
+  annotate("text",x=1.7,y=0.1,label="B",size=12,color="black")+
+  annotate("text",x=2.7,y=0.1,label="B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+
+grcvdataP<-filter(grcvdata, carbon.tech.assay=="G-F5", carbon.tech.evo!="Ancestor")
+
+grcvplot_assay.P <- ggplot(grcvdataP, aes(x=carbon.plotting.evo, y=umax))
+grcvpanel_assay.P <- grcvplot_assay.P + geom_jitter(
+  aes(shape = carbon.tech.evo, color = carbon.tech.evo),
+  position = position_jitterdodge(jitter.width = 1.5, dodge.width = 0.7),
+  size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(grcvdata, carbon.tech.assay=="G-F5", carbon.tech.evo=="Ancestor")$umax), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = carbon.tech.evo),
+    fun.data = "mean_se", fun.args = list(mult = (0)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "point", size = 10, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  stat_summary(
+    aes(color = carbon.tech.evo),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "linerange", size = 3,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.01,.3),breaks=c(0,.1,.2), expand = c(0,0)) +
+  labs(x="\n",y="Max growth rate on DP5") +
+  annotate("text",x=0.7,y=0.13,label="B",size=12,color="black")+
+  annotate("text",x=1.7,y=0.22,label="A",size=12,color="black")+
+  annotate("text",x=2.7,y=0.13,label="B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+
+
+grcv.colors.temp<-c("darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
+
+grcvdataX<-filter(grcvdata, carbon.tech.assay=="G-F24", carbon.tech.evo!="Ancestor")
+
+grcvplot_assay.X <- ggplot(grcvdataX, aes(x=carbon.plotting.evo, y=umax))
+grcvpanel_assay.X <- grcvplot_assay.X + geom_jitter(
+  aes(shape = carbon.tech.evo, color = carbon.tech.evo),
+  position = position_jitterdodge(jitter.width = 1.5, dodge.width = 0.7),
+  size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(grcvdata, carbon.tech.assay=="G-F24", carbon.tech.evo=="Ancestor")$umax), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = carbon.tech.evo),
+    fun.data = "mean_se", fun.args = list(mult = (0)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "point", size = 10, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  stat_summary(
+    aes(color = carbon.tech.evo),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "linerange", size = 3,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.01,.08),breaks=c(0,.05), expand = c(0,0)) +
+  labs(x="\nEvolution diet",y="Max growth rate on DP24") +
+  annotate("text",x=0.7,y=0.03,label="A,B",size=12,color="black")+
+  annotate("text",x=1.7,y=0.02,label="B",size=12,color="black")+
+  annotate("text",x=2.7,y=0.04,label="A",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+
+
+savetofile<-grid.arrange(grcvpanel_assay.F,grcvpanel_assay.P,grcvpanel_assay.X,nrow=3)
+ggsave(plot=savetofile,filename="./Figures/Fig.2.png",width=3000,height=8500,units="px",limitsize=FALSE)
+```
+
+#### This script is done, move on to 3.
