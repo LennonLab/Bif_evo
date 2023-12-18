@@ -1,0 +1,79 @@
+---
+title: "5. Comparison between two mutated transport proteins for fructose"
+output: word_document
+date: "2023-12-10"
+---
+
+
+# Clear workspace and set directory
+```{r setup}
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/Bifidobacterium"))
+#setwd("~/GitHub/Bifidobacterium")
+getwd()
+rm(list=ls())
+```
+
+# Load packages and functions
+```{r}
+getwd()
+require("ggplot2");require("tidyverse");require("png");require("dplyr");require("grid");require("vegan");require("indicspecies");require("ggrepel");require("gridExtra")
+```
+
+# Load data
+```{r}
+mycols=c('black','black','black')
+mycols_breakout=c('black','black','black','black','black','black','black','black')
+#Import data from HPLC experiments
+myhplc<-read.csv("./Data/metabolite.flux.data.csv")
+myhplc$condition_short<-factor(myhplc$condition_short,levels=c("GF","F"))
+myhplc$evo_trt<-factor(myhplc$evo_trt,levels=c("F","P","X","Anc"))
+myhplc$evo_trt_plotting<-recode(myhplc$evo_trt, "F" = "DP0", "P" = "DP5", "X" = "DP24", "Anc" = "Ancestor")
+myhplc$evo_trt_plotting<-factor(myhplc$evo_trt_plotting,levels=c("DP0","DP5","DP24","Ancestor"))
+
+grrPglcU<-read.csv("./Data/umax.on.P_F-evolved_glcU.vs.lacY.csv")
+```
+
+```{r}
+
+#Compare glcU mutants (evolved on DP0) to lacY mutants (evolved on DP0) for growth rate when grown on DP5
+var.test(x=c(filter(grrPglcU, importer=="glcU")$umax_on_P),y=c(filter(grrPglcU, importer=="lacY")$umax_on_P),ratio=1,alternative = "t")
+#P = .05035. Homoscedastic.
+t.test(x=c(filter(grrPglcU, importer=="glcU")$umax_on_P),y=c(filter(grrPglcU, importer=="lacY")$umax_on_P),mu=0,alternative = "t",paired=F,var.equal=T)
+#p = 0.004283
+```
+
+```{r}
+#Make fig. 2.11
+#It's comparing the lacY vs. glcU F-evolved pops
+fig2.11cols<-c("darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
+
+fig2.11df<-filter(myhplc, condition_short=="F" & evo_trt_plotting=="DP0")
+fig2.11df$Importer<-recode(fig2.11df$Importer, "glcU" = "GlcU", "lacY" = "LacY")
+fig2.11df$Importer<-factor(fig2.11df$Importer, levels=c("LacY", "GlcU"))
+
+
+fig2.11plot <- ggplot(fig2.11df, aes(x=Importer, y=flux.fru.pos))
+fig2.11plot + geom_jitter(
+  aes(shape = Importer, color = Importer),
+  position = position_jitterdodge(jitter.width = 1, dodge.width = 0.7),
+  size = 5.5, stroke = 2) +
+  #geom_errorbar(data=grcvdataF, mapping = aes(x=carbon.tech.evo,ymin=umax.anc,ymax=umax.anc),color=grcv.colors,lwd=2.2,linetype=117) +
+  geom_hline(yintercept = mean(filter(myhplc, condition_short=="F" & evo_trt_plotting=="Ancestor")$flux.fru.pos), color="dark grey", lwd=2.2,linetype=117) +
+  scale_shape_manual(values = c(0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = Importer),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "pointrange", size = 3, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols_breakout) +
+  scale_y_continuous(limits = c(-0.04,19),breaks=c(0,5,10,15), expand = c(0,0)) +
+  #labs(x="\nMutated importer",y="Fructose flux (fmol/cell/hr\n")) +
+  xlab("\nMutated importer")+
+  ylab( expression(atop(paste("Fructose flux (fmol/cell * ",hr^{-1},")"))))+
+  #annotate("text",x=0.7,y=13.5,label="A",size=12,color="black")+
+  #annotate("text",x=1.7,y=9.0,label="B",size=12,color="black")+
+  #annotate("text",x=2.7,y=11.4,label="A,B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 10, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 10, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 2.5), axis.ticks.x = element_line(color = "black", size = 2.5), axis.ticks.length.x=unit(0.5, "cm"),axis.ticks.length.y=unit(0.5, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+```
