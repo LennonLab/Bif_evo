@@ -1,0 +1,213 @@
+---
+title: "1.OD"
+output: word_document
+date: "2023-12-10"
+---
+
+
+# Clear workspace and set directory
+```{r setup}
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/Bifidobacterium"))
+#setwd("~/GitHub/Bifidobacterium")
+getwd()
+rm(list=ls())
+```
+
+# Load packages and functions
+```{r}
+getwd()
+require("ggplot2");require("tidyverse");require("png");require("dplyr");require("grid");require("vegan");require("indicspecies");require("ggrepel");require("gridExtra")
+```
+
+# Load data
+```{r}
+mycols=c('black','black','black')
+
+###############Import basic OD data on the 3 substrates############
+mydf0<-read.csv("./Data/OD_20201104.csv")
+mydf0$carbon2<-recode(mydf0$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+mydf0$carbon2<-factor(mydf0$carbon2, levels=c("DP0","DP5","DP24"))
+mydf0$carbon<-factor(mydf0$carbon, levels=c("Monomer","Low-DP","High-DP"))
+
+###########Import evolved data from timepoint T151, or 1003 generations of evolution.#############
+mydf151<-read.csv("./Data/OD_evolved_20210509.csv")
+mydf151$carbon<-factor(mydf151$carbon, levels=c("Monomer","Low-DP","High-DP"))
+mydf151$carbon2<-recode(mydf151$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+mydf151$carbon2<-factor(mydf151$carbon2, levels=c("DP0","DP5","DP24"))
+
+```
+
+# Statistical test on ancestor data
+```{r}
+#Does the ancestor show different growth patterns on the different carbon sources?
+tubeaov0<-aov(mydf0$OD.600 ~ mydf0$carbon)
+summary(tubeaov0)
+TukeyHSD(tubeaov0)
+#All treatments are significantly different.
+#Tukey letters: A, B, C
+```
+
+# Do a statistical test: Grown on their "home" diets, do the evolved populations differ in their max OD on each diet?
+```{r}
+tubeaov151<-aov(mydf151$OD.600 ~ mydf151$carbon)
+summary(tubeaov151)
+TukeyHSD(tubeaov151)
+#F and GF7 are significantly higher than GF23. F and GF5 not significantly different from each other.
+#Tukey letters: A, A, B
+#Interpretation: There is no longer any difference in growth on DP0 vs. DP5
+```
+
+# Do the same kind of ANOVA but for comparing absolute increase vs. ancestor
+```{r}
+tubeaov151_abs.change<-aov(mydf151$abs.change.vs.anc ~ mydf151$carbon2)
+summary(tubeaov151_abs.change)
+TukeyHSD(tubeaov151_abs.change)
+###Significant ANOVA
+###Tukey letters: A, B, C
+```
+
+# Do the same kind of ANOVA but for comparing the percent increase vs. ancestor##################
+```{r}
+tubeaov151_pct.increase<-aov(mydf151$percent.increase.vs.anc ~ mydf151$carbon2)
+summary(tubeaov151_pct.increase)
+TukeyHSD(tubeaov151_pct.increase)
+###Significant ANOVA
+###Tukey letters: A, B, B
+```
+
+# Make plots
+
+# Fig. S2
+## Make a plot of the ancestor data: OD when grown on the 3 basic substrates
+```{r}
+odtube0 <- ggplot(mydf0, aes(x=carbon2, y=OD.600))
+odtube0 +
+  geom_jitter(
+  aes(shape = carbon2, color = carbon2), #I cut out the "shape = Evolution, " part of the aes so that all shapes would be the same shape
+  position = position_jitterdodge(jitter.width = 1, dodge.width = 0.7),
+  size = 5.5, stroke = 2) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = carbon2),
+    fun.data = "mean_se", fun.args = list(mult = (0)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "point", size = 10, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  stat_summary(
+    aes(color = carbon2),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "linerange", size = 3,
+    position = position_dodge(1),
+  ) +
+  scale_color_manual(values = mycols) +
+  scale_y_continuous(limits = c(-0.04,.9),breaks=c(0,.4,.8), expand = c(0,0)) +
+  labs(x="\nDiet",y="Biomass (OD600)\n") +
+  #geom_text("B",hjust=0,vjust=0) +
+  annotate("text",x=.7,y=0.39,label="B",size=12,color="black")+
+  annotate("text",x=1.7,y=0.8,label="A",size=12,color="black")+
+  annotate("text",x=2.7,y=0.31,label="C",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+
+ggsave(filename="./Figures/Fig.S2.png",width=3000,height=3000,units="px")
+```
+
+
+
+# Fig. 1
+## Combine the OD plots. This plot will display the OD of evolved bacteria in their "home" environments and compare it to the ancestral growth phenotype in each of these environments.
+```{r}
+#fig
+FOD<-mean(c(filter(mydf0, carbon=="Monomer")$OD.600))
+POD<-mean(c(filter(mydf0, carbon=="Low-DP")$OD.600))
+XOD<-mean(c(filter(mydf0, carbon=="High-DP")$OD.600))
+
+anc.OD<-c(FOD,FOD,FOD,FOD,FOD,FOD,FOD,FOD,POD,POD,POD,POD,POD,POD,POD,POD,XOD,XOD,XOD,XOD,XOD,XOD,XOD,XOD)
+anc.colors<-c("darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
+
+odtube151 <- ggplot(mydf151, aes(x=carbon2, y=OD.600))
+odtube151 +geom_errorbar(aes(ymin=anc.OD,ymax=anc.OD),color=anc.colors,lwd = 2.25,linetype=117) +
+  geom_jitter(
+  aes(shape = carbon2, color = carbon2), #I cut out the "shape = Evolution, " part of the aes so that all shapes would be the same shape
+  position = position_jitterdodge(jitter.width = 1.5, dodge.width = 0.7),
+  size = 5.5, stroke = 2) +
+  scale_shape_manual(values = c(0,0,0)) +#12 is a square with a vertical cross inside it
+  stat_summary(
+    aes(color = carbon2),
+    fun.data = "mean_se", fun.args = list(mult = (0)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "point", size = 10, stroke=2, shape=16,
+    position = position_dodge(1),
+  ) +
+  stat_summary(
+    aes(color = carbon2),
+    fun.data = "mean_se", fun.args = list(mult = (1)), #mean_sdl add +/- standard deviation; mult=1 means that it is SD*1 that is drawn.  Mean_se draws the standard error of the mean
+    geom = "linerange", size = 3,
+    position = position_dodge(1),
+  ) +
+    scale_color_manual(values = mycols) +
+  scale_y_continuous(limits = c(-0.04,1.6),breaks=c(0,.5,1,1.5), expand = c(0,0)) +
+  labs(x="\nDiet",y="Biomass (OD600)\n") +
+  annotate("text",x=.6,y=1.4,label="A",size=12,color="black")+
+  annotate("text",x=1.6,y=1.4,label="A",size=12,color="black")+
+  annotate("text",x=2.6,y=0.55,label="B",size=12,color="black")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  theme(legend.key=element_blank(),axis.text.x=element_text(size=34,margin = margin(t = 20, r = 0, b = 0, l = 0)),axis.text.y=element_text(size=34,margin = margin(t = 0, r = 20, b = 0, l = 0)),axis.title=element_text(size=36),legend.text=element_text(size=22),legend.title = element_text(size=34), axis.ticks.y = element_line(color = "black", size = 3), axis.ticks.x = element_line(color = "black", size = 3), axis.ticks.length.x=unit(0.7, "cm"),axis.ticks.length.y=unit(0.7, "cm"), legend.position = "none", panel.border = element_rect(color = "black", fill = NA, size = 3.5), axis.line = element_line(colour = "black"))
+
+ggsave(filename="./Figures/Fig.1.png",width=3000,height=3000,units="px")
+```
+
+
+
+# t-tests with OD
+```{r}
+
+#For each carbon source, I could do two-sample t-test to ask whether growth increased after evolution.
+#This is misleading, though, because there are two different levels of replication.
+#We should really be doing one-sample t-tests and taking the ancestral value as fixed.
+
+#################################################################################
+# Do the one-sample t-tests
+#Did growth on fructose increase during 1000 generations of natural selection?
+shapiro.test(c(filter(mydf151, carbon == "Monomer")$OD.600))
+#P = .4783. Data are not significantly non-Gaussian.
+t.test(x=c(filter(mydf151, carbon == "Monomer")$OD.600),mu=mean(c(filter(mydf0, carbon=="Monomer")$OD.600)),alternative = 'g')
+fig2p1<-t.test(x=c(filter(mydf151, carbon == "Monomer")$OD.600),mu=mean(c(filter(mydf0, carbon=="Monomer")$OD.600)),alternative = 'g')$p.value
+#p < 0.0001
+#Growth increased by 1.02 OD units, an increase of 310%
+
+
+#Did growth on low-DP inulin increase during 1000 generations of natural selection?
+shapiro.test(c(filter(mydf151, carbon == "Low-DP")$OD.600))
+#P = .5522. Data are not significantly non-Gaussian.
+t.test(x=c(filter(mydf151, carbon == "Low-DP")$OD.600),mu=mean(c(filter(mydf0, carbon=="Low-DP")$OD.600)),alternative = 'g')
+fig2p2<-t.test(x=c(filter(mydf151, carbon == "Low-DP")$OD.600),mu=mean(c(filter(mydf0, carbon=="Low-DP")$OD.600)),alternative = 'g')$p.value
+#p < 0.0001
+#Growth increased by 0.57 OD units, an increase of 74%
+
+#Did growth on high-DP inulin increase during 1000 generations of natural selection?
+shapiro.test(c(filter(mydf151, carbon == "High-DP")$OD.600))
+#P = .1954. Data are not significantly non-Gaussian.
+t.test(x=c(filter(mydf151, carbon == "High-DP")$OD.600),mu=mean(c(filter(mydf0, carbon=="High-DP")$OD.600)),alternative = 'g')
+fig2p3<-t.test(x=c(filter(mydf151, carbon == "High-DP")$OD.600),mu=mean(c(filter(mydf0, carbon=="High-DP")$OD.600)),alternative = 'g')$p.value
+#p  < 0.001
+#Growth increased by 0.23 OD units, an increase of 91%
+
+#fig2pvec<-c(fig2p1,fig2p2,fig2p3)
+#fig2pvec
+
+mypvec151.onesample<-c(t.test(x=c(filter(mydf151, carbon == "Monomer")$OD.600),mu=mean(c(filter(mydf0, carbon=="Monomer")$OD.600)),alternative = 'g')$p.value,t.test(x=c(filter(mydf151, carbon == "Low-DP")$OD.600),mu=mean(c(filter(mydf0, carbon=="Low-DP")$OD.600)),alternative = 'g')$p.value,t.test(x=c(filter(mydf151, carbon == "High-DP")$OD.600),mu=mean(c(filter(mydf0, carbon=="High-DP")$OD.600)),alternative = 'g')$p.value)
+mypvec151.onesample
+mypvec151.onesample.adjust<-p.adjust(p=mypvec151.onesample, method = "BH")#cite BH&Y 2009
+mypvec151.onesample.adjust
+
+#################################################################################
+####I compared changes ("deltas") of growth on each evolved home diet compared to the ancestor, both as absolute values and as percentages. But we can do ANOVA on the absolute deltas to statistically quantify which evolved populations had the greatest increase in growth
+
+
+home.delta.aov<-aov(mydf151$abs.change.vs.anc ~ mydf151$carbon)
+summary(home.delta.aov)
+TukeyHSD(home.delta.aov)
+
+```
+
+#### This script is done, move on to 2.
