@@ -1,0 +1,305 @@
+---
+title: "Probiotic evolution"
+author: "Roy Moger-Reischer and Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin = 2.54cm
+---
+
+# Biomass of ancestral and evolved strains on different resources (Fig. 1)
+
+## Clear workspace and set directory
+
+```{r setup}
+rm(list=ls())
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/Bifidobacterium"))
+getwd()
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("knitr")
+require("extrafont")
+require("ggrepel");
+require("gridExtra")
+require("contrast")
+sem <- function(x) sqrt(var(x)/length(x))
+cv <- function(x) (sd(x)/mean(x))*100
+```
+
+# Load data
+
+```{r}
+# Import biomass data: optical density (OD) data for ancestor
+anc <- read.csv("./Data/OD_20201104.csv")
+anc$carbon2 <- recode(anc$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+anc$carbon2 <- factor(anc$carbon2, levels = c("DP0", "DP5", "DP24"))
+anc$carbon <- factor(anc$carbon, levels = c("Monomer", "Low-DP", "High-DP"))
+
+# Import OD data for evolved strains (t = 151 days or 1003 generations)
+evo <- read.csv("./Data/OD_evolved_20210509.csv")
+evo$carbon <- factor(evo$carbon, levels = c("Monomer", "Low-DP", "High-DP"))
+evo$carbon2 <- recode(evo$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
+evo$carbon2 <- factor(evo$carbon2, levels = c("DP0", "DP5", "DP24"))
+```
+
+# Statistics 
+
+## 1. Does resource size affect ancestral biomass? 
+
+```{r}
+anc.aov <- aov(anc$OD.600 ~ anc$carbon)
+summary(anc.aov)
+#              Df Sum Sq Mean Sq F value   Pr(>F)    
+# anc$carbon    2 1.0385  0.5192   356.7 8.57e-16 ***
+# Residuals    19 0.0277  0.0015         
+
+TukeyHSD(anc.aov)
+#                   diff        lwr         upr     p adj
+# DP0 vs. DP5   0.4465417  0.3941950  0.49888836 0.0000000
+# DP0 vs. DP24 -0.0726250 -0.1210886 -0.02416138 0.0032552
+# DP5 vs. DP24 -0.5191667 -0.5715134 -0.46681997 0.0000000
+
+# Mean and SEM of ancestor OD by resource type
+anc.mean.sem <- anc %>%
+  group_by(carbon2) %>%
+  summarize(mean = mean(OD.600, na.rm = TRUE), sem = sem(OD.600))
+
+anc.mean.sem <- as.data.frame(anc.mean.sem)
+#
+#   carbon2  mean    sem
+#    DP0     0.330 0.0145
+#    DP5     0.777 0.0151
+#    DP24    0.258 0.0127
+
+# Conclusion: ancestral biomass is different among all resource sizes
+```
+
+## 2. Does resource size affect evovled biomass? 
+
+```{r}
+evo.aov <- aov(evo$OD.600 ~ evo$carbon)
+summary(evo.aov)
+#              Df Sum Sq Mean Sq F value   Pr(>F)    
+#  evo$carbon   2   3.97   1.985   219.4 8.42e-15 ***
+#  Residuals   21   0.19   0.009   
+
+TukeyHSD(evo.aov)
+#                   diff        lwr         upr     p adj
+#   DP0 vs. DP5  -0.001250 -0.1211117  0.1186117 0.9996191
+#   DP0 vs. DP24 -0.863375 -0.9832367 -0.7435133 0.0000000
+#   DP5 vs. DP24 -0.862125 -0.9819867 -0.7422633 0.0000000
+
+# Mean and SEM of ancestor OD by resource type
+evo.mean.sem <- evo %>%
+  group_by(carbon2) %>%
+  summarize(mean = mean(OD.600, na.rm = TRUE), sem = sem(OD.600))
+            
+evo.mean.sem <- evo %>%
+  group_by(carbon2) %>%
+  summarize(
+    mean = mean(OD.600, na.rm = TRUE),
+    sem = sd(OD.600, na.rm = TRUE) / sqrt(n()),  # Calculate SEM
+    lw95 = mean - sem * 1.96,  # Lower bound of 95% CI
+    up95 = mean + sem * 1.96)   # Upper bound of 95% CI
+
+evo.mean.sem <- as.data.frame(evo.mean.sem)
+#
+#          mean   sem  lw95  up95
+# DP0     1.35  0.0477 1.26  1.45 
+# DP5     1.35  0.0299 1.29  1.41 
+# DP24    0.491 0.0149 0.461 0.520
+
+# Conclusion: biomass in DP0 and DP5 are equal; all other combos different
+```
+
+
+## 3. Did evolution lead to an increase in biomass? 
+
+```{r}
+# Subtract biomass of each evolved replicate from biomass of average ancestor
+
+# Anc0 - Evo0
+evo.0 <- evo %>%
+  filter(carbon2 == "DP0") %>%
+  pull(OD.600)
+delta.0 <- unlist(evo.0 - as.numeric(unlist(anc.mean.sem[1,2])))
+
+# Anc5 - Evo5
+evo.5 <- evo %>%
+  filter(carbon2 == "DP5") %>%
+  pull(OD.600)
+delta.5 <- evo.5 - as.numeric(unlist(anc.mean.sem[2,2]))
+
+# Anc24 - Evo24
+evo.24 <- evo %>%
+  filter(carbon2 == "DP24") %>%
+  pull(OD.600)
+delta.24 <- evo.24 - as.numeric(unlist(anc.mean.sem[3,2]))
+
+# Create data frame for analysis
+delta.OD <- data.frame(OD = c(delta.0, delta.5, delta.24),
+  comp = c(rep("DP0", length(delta.0)), rep("DP5", length(delta.5)), 
+          rep("DP24", length(delta.24))))
+delta.OD$comp <- factor(delta.OD$comp, levels = c("DP0", "DP5", "DP24"))
+
+# Summarize deltas
+delta.mean.sem <- delta.OD %>%
+  group_by(comp) %>%
+  summarize(mean = mean(OD, na.rm = TRUE), sem = sem(OD))
+#
+#       mean    sem
+# DP0   1.02  0.0477
+# DP5   0.576 0.0299
+# DP24  0.233 0.0149
+
+# GLM without intercept: test whether groups of delta ODs are different from zero
+delta.fit1 <- lm(OD ~ comp - 1, data = delta.OD)
+summary(delta.fit1)
+
+# Coefficients:
+#       Estimate Std. Error t value Pr(>|t|)    
+#  DP0   1.02387    0.03363  30.450  < 2e-16 ***
+#  DP24  0.23312    0.03363   6.933 7.54e-07 ***
+#  DP5   0.57608    0.03363  17.132 8.08e-14 ***
+
+# Residual standard error: 0.09511 on 21 degrees of freedom
+# Multiple R-squared:  0.9837,	Adjusted R-squared:  0.9814 
+# F-statistic: 422.9 on 3 and 21 DF,  p-value: < 2.2e-16
+
+# Conclusion: biomass increased on all resource sizes during evolution
+```
+
+## 4. Did the magnitude of biomass evolution change with resource treatment? 
+
+```{r}
+
+# GLM with intercept: test if groups of delta biomasses are equal to each other
+delta.fit2 <- lm(OD ~ comp, data = delta.OD)
+
+# Perform contrasts between each resource group
+contrast_DP0_DP5 <- contrast(delta.fit2, list(comp = "DP0"), list(comp = "DP5"))
+contrast_DP0_DP24 <- contrast(delta.fit2, list(comp = "DP0"), list(comp = "DP24"))
+contrast_DP5_DP24 <- contrast(delta.fit2, list(comp = "DP5"), list(comp = "DP24"))
+
+#               Contrast      S.E.    Lower     Upper   t     df  Pr(>|t|)
+#  DP0_DP5     0.4477917 0.0475534 0.348899  0.5466844 9.42   21   0
+#  DP0_D24     0.79075   0.0475534 0.6918573 0.8896427 16.63  21   0
+#  DP5_DP24    0.3429583 0.0475534 0.2440656 0.441851  7.21   21   0
+
+# Conclusion: the rate of biomass evolution depended on resource size
+# DP0 > DP5 > DP24
+```
+
+
+# Create biomass figure (Fig. 1)
+
+```{r}
+# Start figure
+png(filename="~/GitHub/Bifidobacterium/figures/Fig.1a.png",
+    width = 1200, height = 1200, res = 96*2) 
+
+par(mar = c(7, 7, 5, 7))
+
+# Plot evolved biomass (DP0)
+tomato1_rgb <- col2rgb("tomato")/255 
+
+evo.dp0 <- plot(jitter(rep(1, length(evo.0)), amount = 0.1), 
+                evo.0, ylim = c(-0.2, 2.2), xlim = c(0.5, 3.5), 
+                pch = 19, col = rgb(tomato1_rgb[1], tomato1_rgb[2], 
+                tomato1_rgb[3], 0.5), cex = 1.7, yaxt = "n", xaxt = "n", 
+                cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+# Plot evolved biomass (DP5)
+springgreen4_rgb <- col2rgb("springgreen4")/255 
+
+points(jitter(rep(2, length(evo.5)), amount = 0.1), 
+      evo.5, ylim = c(-0.25, 2.0), xlim = c(0.5, 3.5), pch = 19, 
+      col = rgb(springgreen4_rgb[1], springgreen4_rgb[2], 
+      springgreen4_rgb[3], 0.5), cex = 1.7, yaxt = "n", 
+      xaxt = "n", cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+# Plot evolved biomass (DP24)
+cornflowerblue_rgb <- col2rgb("cornflowerblue")/255 
+
+points(jitter(rep(3, length(evo.24)), amount = 0.1), evo.24, 
+       ylim = c(-0.25, 2.0), xlim = c(0.5, 3.5), pch = 19, 
+       col = rgb(cornflowerblue_rgb[1], cornflowerblue_rgb[2], 
+       cornflowerblue_rgb[3], 0.5),cex = 1.7, yaxt = "n", xaxt = "n", 
+       cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+      
+box(lwd = 2)
+
+# Add means
+points(1, evo.mean.sem[1,2], pch = 21, col = "white", 
+       bg = "tomato1", lwd = 1, cex = 2.5)  
+points(2, evo.mean.sem[2,2], pch = 21, col = "white", 
+       bg = "springgreen4", lwd = 1, cex = 2.5)
+points(3, evo.mean.sem[3,2], pch = 21, col = "white", 
+       bg = "cornflowerblue", lwd = 1, cex = 2.5)
+
+# Add SEMs
+arrows(x0 = 1, y0 = evo.mean.sem[1,2], 
+       y1 = evo.mean.sem[1,2] + evo.mean.sem[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 1, y0 = evo.mean.sem[1,2], 
+       y1 = evo.mean.sem[1,2] - evo.mean.sem[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 2, y0 = evo.mean.sem[2,2], 
+       y1 = evo.mean.sem[2,2] + evo.mean.sem[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "springgreen4")
+
+arrows(x0 = 2, y0 = evo.mean.sem[2,2], 
+       y1 = evo.mean.sem[2,2] - evo.mean.sem[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "springgreen4")
+
+arrows(x0 = 3, y0 = evo.mean.sem[3,2], 
+       y1 = evo.mean.sem[3,2] + evo.mean.sem[3,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "cornflowerblue")
+
+arrows(x0 = 3, y0 = evo.mean.sem[3,2], 
+       y1 = evo.mean.sem[3,2] - evo.mean.sem[3,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "cornflowerblue")
+
+# Add ancestral means
+segments(0.75, anc.mean.sem[1,2], 1.25, anc.mean.sem[1,2], col = "tomato1", 
+         lwd = 3, lty = 3, xpd = NA)
+
+segments(1.75, anc.mean.sem[2,2], 2.25, anc.mean.sem[2,2], col = "springgreen4", 
+         lwd = 3, lty = 3, xpd = NA)
+
+segments(2.75, anc.mean.sem[3,2], 3.25, anc.mean.sem[3,2], col = "cornflowerblue", 
+         lwd = 3, lty = 3, xpd = NA)
+
+# Add axes and labels
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0.0", "0.5", "1.0", "1.5", "2.0"), at = c(0, 0.5, 1, 1.5, 2))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 0.5, 1, 1.5, 2), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("DP0", "DP5", "DP24"), 
+     col.axis = "black", at = c(1, 2, 3))
+mtext(expression('Assay diet'), side = 1,
+      outer = TRUE, cex = 1.5, line = -3.5, adj = 0.5)
+mtext(expression('Biomass (OD'[600]*')'), side = 2, outer = TRUE, 
+      cex = 1.5, line = -3, adj = 0.58)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("~/GitHub/Bifidobacterium/figures/Fig.1a.png")
+grid.raster(img)
+```
+
