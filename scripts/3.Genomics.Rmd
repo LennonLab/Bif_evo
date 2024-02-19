@@ -30,6 +30,7 @@ require("ggrepel");
 require("gridExtra")
 require("contrast")
 require("vegan")
+require("indicspecies")
 sem <- function(x) sqrt(var(x)/length(x))
 cv <- function(x) (sd(x)/mean(x))*100
 ```
@@ -38,10 +39,10 @@ cv <- function(x) (sd(x)/mean(x))*100
 # Load data
 
 ```{r}
-mutpopdf <- read.csv("./Data/num.muts.per.signif.gene.per.popn.csv")
-gxp.all.raw <- read.csv("./Data/Bifidobacterium_labels_gxp.csv") 
+mutpopdf <- read.csv("~/GitHub/Bifidobacterium/data/num.muts.per.signif.gene.per.popn.csv")
+gxp.all.raw <- read.csv("~/GitHub/Bifidobacterium/data//Bifidobacterium_labels_gxp.csv") 
 
-gxp.signif.raw <- read.csv("./Data/Bifidobacterium_labels_gxp_signif.only.csv")
+gxp.signif.raw <- read.csv("~/GitHub/Bifidobacterium/data/Bifidobacterium_labels_gxp_signif.only.csv")
 gxp.signif.raw$sample <- as.factor(gxp.signif.raw$sample)
 gxp.signif.raw$treatment <- as.factor(gxp.signif.raw$treatment)
 levels(gxp.signif.raw$treatment)[levels(gxp.signif.raw$treatment)=="F"] <- "DP0"
@@ -67,6 +68,9 @@ gxp.all <- as.matrix(gxp.all[,3:ncol(gxp.all)])
 mutnum.aov <- aov(mutpopdf$num.muts ~ mutpopdf$Evolution_treatment)
 summary(mutnum.aov)
 # Answer: No
+#                              Df Sum Sq Mean Sq F value Pr(>F)
+# mutpopdf$Evolution_treatment  2   3.87   1.933   0.676  0.519
+# Residuals                    21  60.05   2.859  
 
 # Mean and SEM of putatively adaptive mutations by diet type
 mutnum.summary <- mutpopdf %>%
@@ -115,15 +119,16 @@ row.names(gxp.signif.pcoa) <- gxp.signif.raw$sample
 gxp.signif.pcoa$sample <- gxp.signif.raw$sample
 names(gxp.signif.pcoa)[1:3] <- c('PCo1', 'PCo2', 'PCo3')
 
-# Create ordination (Fig. S3)
 
-png(filename="./Figures/Fig.S3a.png",
+# Create ordination: PCoA3 vs. PCoA1 (Fig. 3)
+
+png(filename="~/GitHub/Bifidobacterium/figures/Fig.3.png",
     width = 1200, height = 1200, res = 96*2) 
 
 plot.new()
 par(mar = c(7, 7, 5, 7))
 
-plot(gxp.signif.pcoa[ ,1], gxp.signif.pcoa[ ,2],
+plot(gxp.signif.pcoa[ ,1], gxp.signif.pcoa[ ,3],
      ylim = c(-0.55, 0.55), xlim = c(-0.75, 0.4),
      xlab = "", ylab = "", xaxt = "n", yaxt = "n",
      pch = 22, cex = 2.0, type = "n", cex.lab = 1.5, cex.axis = 1,
@@ -144,9 +149,83 @@ box(lwd = 2)
 
 # Add axis labels
 mtext(expression(paste("PCoA 1 (29.4 %)", sep = "")), side = 1,
-      outer = TRUE, cex = 1.5, line = -3.0)
+      outer = TRUE, cex = 1.5, line = -2.5)
+mtext(expression(paste("PCoA 3 (17.1 %)", sep = "")), side = 2,
+      outer = TRUE, cex = 1.5, line = -2.5, adj = 0.55)
+
+# Subset PCoA scores by strain
+signif.F <- gxp.signif.pcoa[which(gxp.signif.pcoa$treatment == "DP0"), ]
+signif.P <- gxp.signif.pcoa[which(gxp.signif.pcoa$treatment == "DP5"), ]
+signif.X <- gxp.signif.pcoa[which(gxp.signif.pcoa$treatment == "DP24"), ]
+
+# Define colors
+tomato1_rgb <- col2rgb("tomato")/255 
+springgreen4_rgb <- col2rgb("springgreen4")/255 
+cornflowerblue_rgb <- col2rgb("cornflowerblue")/255 
+
+# Plot points by strain
+points(signif.F[ ,1], signif.F[ ,3], pch = 21,
+       cex = 1, col = "tomato1", bg = "tomato1", lwd = 2)
+
+points(signif.P[ ,1], signif.P[ ,3], pch = 21,
+       cex = 1, col = "springgreen4", bg = "springgreen4", lwd = 2)   
+
+points(signif.X[ ,1], signif.X[ ,3], pch = 21,
+       cex = 1, col = "cornflowerblue", bg = "cornflowerblue", lwd = 2)
+
+# Add hulls
+ordihull(cbind(gxp.signif.pcoa$PCo1, gxp.signif.pcoa$PCo3), 
+    groups = gxp.signif.pcoa$treatment, lwd = 2, lty = 0, draw = "polygon", 
+    col = c(rgb(tomato1_rgb[1], tomato1_rgb[2], tomato1_rgb[3], 0.5),
+    rgb(springgreen4_rgb[1], springgreen4_rgb[2], springgreen4_rgb[3], 0.5),
+    rgb(cornflowerblue_rgb[1], cornflowerblue_rgb[2], cornflowerblue_rgb[3], 0.5)), 
+    label = FALSE)
+
+text(-0.44, 0.37, labels = "DP0", cex = 1.3, col = "tomato1")
+text(0.0, 0.47, labels = "DP5", cex = 1.3, col = "springgreen4")
+text(0.2, -0.35, labels = "DP24", cex = 1.3, col = "cornflowerblue")
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("~/GitHub/Bifidobacterium/figures/Fig.3.png")
+grid.raster(img)
+
+
+# Create ordination (Fig. S2): PCoA2 vs. PCoA1
+
+png(filename="~/GitHub/Bifidobacterium/figures/Fig.S1.png",
+    width = 1200, height = 1200, res = 96*2) 
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(gxp.signif.pcoa[ ,1], gxp.signif.pcoa[ ,2],
+     ylim = c(-0.55, 0.55), xlim = c(-0.75, 0.4),
+     xlab = "", ylab = "", xaxt = "n", yaxt = "n",
+     pch = 22, cex = 2.0, type = "n", cex.lab = 1.5, cex.axis = 1,
+     axes = FALSE)
+
+# Add axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("-0.5", "0.0", "0.5"),
+     at = c(-0.5, 0, 0.5))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(-0.5, 0, 0.5), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("-0.5", "-0.25", "0.0", "0.25"), at = c(-0.5, -0.25, 0, 0.25))
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(-0.5, -0.25, 0, 0.25), labels = F)
+abline(h = 0, v = 0, lty = 3)
+box(lwd = 2)
+
+# Add axis labels
+mtext(expression(paste("PCoA 1 (29.4 %)", sep = "")), side = 1,
+      outer = TRUE, cex = 1.5, line = -2.5)
 mtext(expression(paste("PCoA 2 (18.2 %)", sep = "")), side = 2,
-      outer = TRUE, cex = 1.5, line = -3.0)
+      outer = TRUE, cex = 1.5, line = -2.5, adj = 0.55)
 
 # Subset PCoA scores by strain
 signif.F <- gxp.signif.pcoa[which(gxp.signif.pcoa$treatment == "DP0"), ]
@@ -184,75 +263,7 @@ dev.off()
 graphics.off()
 
 # Show Plot
-img <- readPNG("./Figures/Fig.S3a.png")
-grid.raster(img)
-
-# Create ordination (Fig. 3)
-
-png(filename="./Figures/Fig.3a.png",
-    width = 1200, height = 1200, res = 96*2) 
-
-plot.new()
-par(mar = c(7, 7, 5, 7))
-
-plot(gxp.signif.pcoa[ ,1], gxp.signif.pcoa[ ,3],
-     ylim = c(-0.55, 0.55), xlim = c(-0.75, 0.4),
-     xlab = "", ylab = "", xaxt = "n", yaxt = "n",
-     pch = 22, cex = 2.0, type = "n", cex.lab = 1.5, cex.axis = 1,
-     axes = FALSE)
-
-# Add axes
-axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("-0.5", "0.0", "0.5"),
-     at = c(-0.5, 0, 0.5))
-axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at=c(-0.5, 0, 0.5), labels = F)
-axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("-0.5", "-0.25", "0.0", "0.25"), at = c(-0.5, -0.25, 0, 0.25))
-axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(-0.5, -0.25, 0, 0.25), labels = F)
-abline(h = 0, v = 0, lty = 3)
-box(lwd = 2)
-
-# Add axis labels
-mtext(expression(paste("PCoA 1 (29.4 %)", sep = "")), side = 1,
-      outer = TRUE, cex = 1.5, line = -3.0)
-mtext(expression(paste("PCoA 3 (17.1 %)", sep = "")), side = 2,
-      outer = TRUE, cex = 1.5, line = -3.0)
-
-# Subset PCoA scores by strain
-signif.F <- gxp.signif.pcoa[which(gxp.signif.pcoa$treatment == "DP0"), ]
-signif.P <- gxp.signif.pcoa[which(gxp.signif.pcoa$treatment == "DP5"), ]
-signif.X <- gxp.signif.pcoa[which(gxp.signif.pcoa$treatment == "DP24"), ]
-
-# Plot points by strain
-points(signif.F[ ,1], signif.F[ ,3], pch = 21,
-       cex = 1, col = "tomato1", bg = "tomato1", lwd = 2)
-
-points(signif.P[ ,1], signif.P[ ,3], pch = 21,
-       cex = 1, col = "springgreen4", bg = "springgreen4", lwd = 2)   
-
-points(signif.X[ ,1], signif.X[ ,3], pch = 21,
-       cex = 1, col = "cornflowerblue", bg = "cornflowerblue", lwd = 2)
-
-# Add hulls
-ordihull(cbind(gxp.signif.pcoa$PCo1, gxp.signif.pcoa$PCo3), 
-    groups = gxp.signif.pcoa$treatment, lwd = 2, lty = 0, draw = "polygon", 
-    col = c(rgb(tomato1_rgb[1], tomato1_rgb[2], tomato1_rgb[3], 0.5),
-    rgb(springgreen4_rgb[1], springgreen4_rgb[2], springgreen4_rgb[3], 0.5),
-    rgb(cornflowerblue_rgb[1], cornflowerblue_rgb[2], cornflowerblue_rgb[3], 0.5)), 
-    label = FALSE)
-
-text(-0.44, 0.37, labels = "DP0", cex = 1.3, col = "tomato1")
-text(0.0, 0.47, labels = "DP5", cex = 1.3, col = "springgreen4")
-text(0.2, -0.35, labels = "DP24", cex = 1.3, col = "cornflowerblue")
-
-# Close Plot Device
-dev.off()
-graphics.off()
-
-# Show Plot
-img <- readPNG("./Figures/Fig.3a.png")
+img <- readPNG("~/GitHub/Bifidobacterium/figures/Fig.S1.png")
 grid.raster(img)
 ```
 
@@ -269,15 +280,20 @@ TukeyHSD(compare.variance)
 
 # Answer: Yes
 # DP0 has more variance than DP5 or DP24
+#                    diff        lwr         upr     p adj
+# G-F24-F    -0.148452913 -0.2611923 -0.03571357 0.0087699 (DP24 vs. DP0)
+# G-F5-F     -0.138584451 -0.2513238 -0.02584511 0.0144279 (DP5 vs. DP0)
+# G-F5-G-F24  0.009868462 -0.1028709  0.12260780 0.9735548 (DP5 vs. DP24)
 ```
 
-# Do indicator gene analysis
+# Peform indicator gene analysis
+
 ```{r}
 trts.i <- c("F", "F", "F", "F", "F", "F", "F", "F",
           "G-F5", "G-F5", "G-F5", "G-F5", "G-F5", "G-F5", "G-F5", "G-F5", 
           "G-F24", "G-F24", "G-F24", "G-F24", "G-F24", "G-F24", "G-F24", "G-F24")
 gxp.i <- gxp.signif
-indvals <- multipatt(x = gxp.i, cluster=trts.i, func = "IndVal.g", control = how(nperm = 999))
+indvals <- multipatt(x = gxp.i, cluster = trts.i, func = "IndVal.g", control = how(nperm = 999))
 summary(indvals, indvalcomp = TRUE)
 # Component A: "specificity" or "positive predictive value" of the species as indicator of the site group. 
 # It is the sample estimate of the probability that the surveyed site belongs to the target site group given the fact that the species has been found.

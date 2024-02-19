@@ -37,13 +37,13 @@ cv <- function(x) (sd(x)/mean(x))*100
 
 ```{r}
 # Import biomass data: optical density (OD) data for ancestor
-anc <- read.csv("./Data/OD_20201104.csv")
+anc <- read.csv("~/GitHub/Bifidobacterium/data/OD_20201104.csv")
 anc$carbon2 <- recode(anc$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
 anc$carbon2 <- factor(anc$carbon2, levels = c("DP0", "DP5", "DP24"))
 anc$carbon <- factor(anc$carbon, levels = c("Monomer", "Low-DP", "High-DP"))
 
 # Import OD data for evolved strains (t = 151 days or 1003 generations)
-evo <- read.csv("./Data/OD_evolved_20210509.csv")
+evo <- read.csv("~/GitHub/Bifidobacterium/data/OD_evolved_20210509.csv")
 evo$carbon <- factor(evo$carbon, levels = c("Monomer", "Low-DP", "High-DP"))
 evo$carbon2 <- recode(evo$carbon2, "F" = "DP0", "G-F5" = "DP5", "G-F24" = "DP24")
 evo$carbon2 <- factor(evo$carbon2, levels = c("DP0", "DP5", "DP24"))
@@ -202,7 +202,7 @@ contrast_DP5_DP24 <- contrast(delta.fit2, list(comp = "DP5"), list(comp = "DP24"
 
 ```{r}
 # Start figure
-png(filename="~/GitHub/Bifidobacterium/figures/Fig.1a.png",
+png(filename="~/GitHub/Bifidobacterium/figures/Fig.1.png",
     width = 1200, height = 1200, res = 96*2) 
 
 par(mar = c(7, 7, 5, 7))
@@ -289,17 +289,18 @@ axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      labels = c("DP0", "DP5", "DP24"), 
      col.axis = "black", at = c(1, 2, 3))
-mtext(expression('Assay diet'), side = 1,
-      outer = TRUE, cex = 1.5, line = -3.5, adj = 0.5)
+
+mtext(expression('Resource size'), side = 1,
+      outer = TRUE, cex = 1.5, line = -2.5, adj = 0.5)
 mtext(expression('Biomass (OD'[600]*')'), side = 2, outer = TRUE, 
-      cex = 1.5, line = -3, adj = 0.58)
+      cex = 1.5, line = -2.5, adj = 0.58)
 
 # Close Plot Device
 dev.off()
 graphics.off()
 
 # Show Plot
-img <- readPNG("~/GitHub/Bifidobacterium/figures/Fig.1a.png")
+img <- readPNG("~/GitHub/Bifidobacterium/figures/Fig.1.png")
 grid.raster(img)
 ```
 

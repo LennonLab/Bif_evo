@@ -1,0 +1,242 @@
+---
+title: "Probiotic evolution"
+author: "Roy Moger-Reischer and Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin = 2.54cm
+---
+
+# Metabolites of ancestral and evolved strains on different resources (Fig. 4)
+
+# Clear workspace and set directory
+
+```{r setup}
+rm(list = ls())
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/Bifidobacterium"))
+getwd()
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("knitr")
+require("extrafont")
+require("ggrepel");
+require("gridExtra")
+require("contrast")
+sem <- function(x) sqrt(var(x)/length(x))
+cv <- function(x) (sd(x)/mean(x))*100
+```
+
+# Load data
+
+```{r}
+hplc <- read.csv("~/GitHub/Bifidobacterium/data/metabolite.flux.data.csv")
+hplc$condition_short <- factor(hplc$condition_short,levels=c("GF","F"))
+hplc$evo_trt <- factor(hplc$evo_trt, levels=c("F", "P", "X", "Anc"))
+hplc$evo_trt_plotting <- recode(hplc$evo_trt, "F" = "DP0", "P" = "DP5", "X" = "DP24", "Anc" = "Ancestor")
+hplc$evo_trt_plotting <- factor(hplc$evo_trt_plotting, levels = c("DP0", "DP5", "DP24", "Ancestor"))
+grrPglcU <- read.csv("~/GitHub/Bifidobacterium/data/umax.on.P_F-evolved_glcU.vs.lacY.csv")
+```
+
+# Calculate metabolite fluxes 
+
+```{r}
+# Ancestral fructose flux
+anc <- hplc %>%
+  filter(evo_trt == "Anc")
+
+anc.summary.F <- anc %>%
+  summarize(mean = mean(flux.fru.pos, na.rm = TRUE), sem = sem(flux.fru.pos))
+anc.summary.F <- as.numeric(unlist(anc.summary.F))
+
+evo <- hplc %>%
+  filter(evo_trt !="Anc")
+
+# Evolved fructose flux
+evo <- hplc %>% 
+  filter(condition_short == "F" & evo_trt_plotting == "DP0") %>%
+  select(Importer, flux.fru.pos, evo_trt_plotting)
+
+evo.glcU <- evo %>%
+  filter(Importer == "glcU") %>%
+  select(flux.fru.pos)
+evo.glcU <- as.numeric(unlist(evo.glcU))
+
+evo.lacY <- evo %>%
+  filter(Importer == "lacY") %>%
+  select(flux.fru.pos)
+evo.lacY <- as.numeric(unlist(evo.lacY))
+
+evo.summary <- evo %>%
+  group_by(Importer) %>%
+  summarize(mean = mean(flux.fru.pos, na.rm = TRUE), sem = sem(flux.fru.pos))
+evo.summary <- as.data.frame(evo.summary)
+```
+
+
+# Statistics: umax of glcU vs. lacY mutants (evolved on DPO) assayed on fructose (DP0)
+
+## 1. umax of glcU vs. lacY mutants (evolved on DPO) assayed on DP5
+
+```{r}
+# test for equal variance
+var.test(x = c(filter(grrPglcU, importer == "glcU")$umax_on_P), 
+         y = c(filter(grrPglcU, importer == "lacY")$umax_on_P), 
+         ratio = 1, alternative = "t")
+# Answer: P = 0.05035; ~ homoscedastic
+
+# Two sample t-test for differences in umax 
+test.umax <- t.test(x = c(filter(grrPglcU, importer == "glcU")$umax_on_P), 
+          y = c(filter(grrPglcU, importer == "lacY")$umax_on_P), mu = 0, 
+          alternative = "t", paired = F, var.equal = T)
+# umax of lacY mutant is 4x greater than umax of glcU mutant
+# t = -4.46, df = 6, p-value = 0.004283
+# mean of glcU =  0.04585;  mean of lacY = 0.18530 
+```
+
+## 2. Does fructose important differ between mutants?
+
+```{r}
+test.import <- t.test(x = evo.glcU, y = evo.lacY, mu = 0, 
+          alternative = "t", paired = F, var.equal = T)
+
+# Answer: Yes
+# t = -4.0717, df = 6, p-value = 0.006563
+# mean lacY = 14.514321; mean of glcU = 7.429857 
+# two-fold difference in import
+```
+
+## 3. Do fructose rates differ from ancestor?
+
+```{r}
+# Subtract flux of each evolved replicate from flux of average ancestor
+
+delta.lacY <- evo.lacY - anc.summary.F[1,1]
+delta.glcU <- evo.glcU - anc.summary.F[1,1]
+  
+# Create data frame for analysis
+delta.flux <- data.frame(flux = rbind(delta.lacY, delta.glcU), 
+              comp = c(rep("lacY", nrow(delta.lacY)), rep("glcU", nrow(delta.glcU))))
+
+# Summarize deltas
+delta.summary <- delta.flux %>%
+  group_by(comp) %>%
+  summarize(mean = mean(flux.fru.pos, na.rm = TRUE), sem = sem(flux.fru.pos))
+#   comp   mean   sem
+# 1 glcU   4.72 0.640
+# 2 lacY  11.8  1.62 
+
+# GLM without intercept: test whether groups of delta fluxes are different from zero
+delta.fit1 <- lm(flux.fru.pos ~ comp - 1, data = delta.flux)
+summary(delta.fit1)
+
+# Coefficients:
+#         Estimate Std. Error t value Pr(>|t|)    
+# compglcU    4.716      1.230   3.833  0.00863 ** 
+# complacY   11.800      1.230   9.591 7.34e-05 ***
+
+# Residual standard error: 2.461 on 6 degrees of freedom
+# Multiple R-squared:  0.9468,	Adjusted R-squared:  0.929 
+# F-statistic: 53.34 on 2 and 6 DF,  p-value: 0.000151
+
+# Conclusion: fructose flux increased fro both mutants
+```
+
+## 4. Did the magnitude of flux evolution change depending on mutation? 
+
+```{r}
+delta.fit2 <- lm(flux.fru.pos ~ comp, data = delta.flux)
+
+# Perform contrasts between each resource group
+contrast_lacY_glcU <- contrast(delta.fit2, list(comp = "lacY"), list(comp = "glcU"))
+
+#   Contrast     S.E.    Lower    Upper    t df Pr(>|t|)
+# 1 7.084463 1.739931 2.827006 11.34192 4.07  6   0.0066
+
+# Conclusion: evolution of fructose import great for lacY > glcU
+```
+
+
+# Figure: fructose import of glcU vs. lacY mutants
+
+```{r}
+# Start figure
+png(filename="~/GitHub/Bifidobacterium/figures/Fig.5.png",
+    width = 1200, height = 1200, res = 96*2) 
+
+par(mar = c(7, 7, 5, 7))
+
+# Plot evolved biomass (DP0)
+tomato1_rgb <- col2rgb("tomato")/255 
+
+evo.glcU.plot <- plot(jitter(rep(1.25, length(evo.glcU)), amount = 0.1), 
+                evo.glcU, ylim = c(-2, 20), xlim = c(1, 2), 
+                pch = 19, col = rgb(tomato1_rgb[1], tomato1_rgb[2], 
+                tomato1_rgb[3], 0.5), cex = 1.7, yaxt = "n", xaxt = "n", 
+                cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+points(jitter(rep(1.75, length(evo.lacY)), amount = 0.1), 
+      evo.lacY, ylim = c(-2, 20), xlim = c(1, 2), pch = 19, 
+      col = rgb(tomato1_rgb[1], tomato1_rgb[2], 
+      tomato1_rgb[3], 0.5), cex = 1.7, yaxt = "n", 
+      xaxt = "n", cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+box(lwd = 2)
+
+# Add means
+points(1.25, evo.summary[1,2], pch = 21, col = "white", 
+       bg = "tomato1", lwd = 1, cex = 2.5)  
+points(1.75, evo.summary[2,2], pch = 21, col = "white", 
+       bg = "tomato1", lwd = 1, cex = 2.5) 
+
+# Add SEMs
+arrows(x0 = 1.25, y0 = evo.summary[1,2], 
+       y1 = evo.summary[1,2] + evo.summary[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 1.25, y0 = evo.summary[1,2], 
+       y1 = evo.summary[1,2] - evo.summary[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 1.75, y0 = evo.summary[2,2], 
+       y1 = evo.summary[2,2] + evo.summary[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 1.75, y0 = evo.summary[2,2], 
+       y1 = evo.summary[2,2] - evo.summary[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+# Add ancestral means
+segments(1.1, anc.summary.F[1], 1.9, anc.summary.F[1], col = "tomato1", 
+         lwd = 3, lty = 3, xpd = NA)
+
+# Add axes and labels
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0", "5", "10", "15", "20"), at = c(0, 5, 10, 15, 20))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0, 5, 10, 15, 20), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.25, 1.75), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c(expression(italic(glcU)), expression(italic(lacY))), at = c(1.25, 1.75))
+
+mtext(expression('Evolved mutants'), side = 1,
+      outer = TRUE, cex = 1.5, line = -2.5, adj = 0.5)
+
+mtext(expression("Fructose import" ~ (fmol ~ cell^{-1} ~ h^{-1})), 
+      side = 2, outer = TRUE, cex = 1.5, line = -3, adj = 0.58)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("~/GitHub/Bifidobacterium/figures/Fig.5.png")
+grid.raster(img)
+```
