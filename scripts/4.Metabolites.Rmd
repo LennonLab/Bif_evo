@@ -1,0 +1,634 @@
+---
+title: "Probiotic evolution"
+author: "Roy Moger-Reischer and Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin = 2.54cm
+---
+
+# Metabolites of ancestral and evolved strains on different resources (Fig. 4)
+
+# Clear workspace and set directory
+
+```{r setup}
+rm(list = ls())
+knitr::opts_knit$set(root.dir=normalizePath("~/GitHub/Bifidobacterium"))
+getwd()
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("knitr")
+require("extrafont")
+require("ggrepel");
+require("gridExtra")
+require("contrast")
+sem <- function(x) sqrt(var(x)/length(x))
+cv <- function(x) (sd(x)/mean(x))*100
+```
+
+# Load data
+
+```{r}
+hplc <- read.csv("~/GitHub/Bifidobacterium/data/metabolite.flux.data.csv")
+hplc$condition_short <- factor(hplc$condition_short, levels = c("GF","F"))
+hplc$evo <- factor(hplc$evo, levels = c("F","P","X","Anc"))
+hplc$evo_plot <- recode(hplc$evo, "F" = "DP0", "P" = "DP5", "X" = "DP24", 
+                        "Anc" = "Ancestor")
+hplc$evo_plot <- factor(hplc$evo_plot, levels = c("DP0", "DP5", "DP24", 
+                        "Ancestor"))
+
+# Remove the mixed glucose-fructose experimental data
+hplc <- hplc %>%
+  filter(condition_short !="GF")
+```
+
+# Statistics 
+
+## 1. Calculate metabolite fluxes on ancestor 
+
+```{r}
+# Filter ancestral population
+anc <- hplc %>%
+  filter(evo_trt == "Anc")
+
+# Ancestral fructose flux
+anc.summary.F <- anc %>%
+  summarize(mean = mean(flux.fru.pos, na.rm = TRUE), sem = sem(flux.fru.pos))
+
+# Ancestral acetate flux
+anc.summary.A <- anc %>%
+  summarize(mean = mean(flux.ace.0, na.rm = TRUE), sem = sem(flux.ace.0))
+
+# Ancestral lactate flux
+anc.summary.L <- anc %>%
+  summarize(mean = mean(flux.lact.0, na.rm = TRUE), sem = sem(flux.lact.0))
+```
+
+## 2. Metabolite flux differ among strains evovled on different resources? 
+
+```{r}
+# Filter evolved populations
+evo <- hplc %>%
+  filter(evo_trt !="Anc")
+
+# Fructose flux: 
+
+evo.summary.F <- evo %>%
+  group_by(evo_plot) %>%
+  summarize(mean = mean(flux.fru.pos, na.rm = TRUE), sem = sem(flux.fru.pos))
+evo.summary.F <- as.data.frame(evo.summary.F)
+
+# Summary: DP0-evolved > DP5-evolved
+evo.aov.F <- aov(flux.fru.pos ~ evo_plot, data = evo)
+summary(evo.aov.F)
+#              Df Sum Sq Mean Sq F value  Pr(>F)   
+# evo_plot     2  109.0   54.52   4.201 0.0292 *
+# Residuals   21  272.5   12.98    
+
+TukeyHSD(evo.aov.F)
+#              diff        lwr        upr     p adj
+# DP5-DP0  -5.139350 -9.679038 -0.5996615 0.0247383
+# DP24-DP0 -1.773765 -6.313453  2.7659234 0.5942214
+# DP24-DP5  3.365585 -1.174104  7.9052733 0.1725517
+
+#Acetate flux: 
+
+evo.summary.A <- evo %>%
+  group_by(evo_plot) %>%
+  summarize(mean = mean(flux.ace.0, na.rm = TRUE), sem = sem(flux.ace.0))
+evo.summary.A <- as.data.frame(evo.summary.A)
+
+# summary: marginal significance overall;
+#          no differences with Tukey
+evo.aov.A <- aov(flux.ace.0 ~ evo_plot, data = evo)
+summary(evo.aov.A)
+#             Df Sum Sq Mean Sq F value  Pr(>F)   
+# evo_plot     2  149.9   74.94   2.888  0.078 .
+# Residuals   21  545.0   25.95       
+
+TukeyHSD(evo.aov.A)
+#              diff         lwr       upr     p adj
+# DP5-DP0  -5.297965753 -11.718342  1.122410 0.1183326
+# DP24-DP0  0.006701859  -6.413674  6.427078 0.9999962
+# DP24-DP5  5.304667612  -1.115708 11.725043 0.1177591
+
+#Lactate flux: 
+
+evo.summary.L <- evo %>%
+  group_by(evo_plot) %>%
+  summarize(mean = mean(flux.lact.0, na.rm = TRUE), sem = sem(flux.lact.0))
+evo.summary.L <- as.data.frame(evo.summary.L)
+
+# summary: no differences;
+
+evo.aov.L <- aov(flux.lact.0 ~ evo_plot, data = evo)
+summary(evo.aov.L)
+#            Df Sum Sq Mean Sq F value Pr(>F)  
+# evo_plot     2   61.3   30.63   1.458  0.255
+# Residuals   21  441.1   21.00    
+
+TukeyHSD(evo.aov.L)
+#               diff      lwr        upr     p adj
+# DP5-DP0  -2.9962208 -8.772062 2.779621 0.4067360
+# DP24-DP0  0.6818265 -5.094015 6.457668 0.9524774
+# DP24-DP5  3.6780473 -2.097794 9.453889 0.2655777
+```
+
+## 3. Did evolution lead to altered metabolite fluxes? 
+
+```{r}
+# Fructose
+
+# Subtract flux of each evolved replicate from flux of average ancestor
+
+# Anc0 - Evo0
+evo.DP0.F <- evo %>%
+  filter(evo_plot == "DP0") %>%
+  pull(flux.fru.pos)
+delta.DP0.F <- unlist(evo.DP0.F - as.numeric(unlist(anc.summary.F[1,2])))
+
+# Anc5 - Evo5
+evo.DP5.F <- evo %>%
+  filter(evo_plot == "DP5") %>%
+  pull(flux.fru.pos)
+delta.DP5.F <- unlist(evo.DP5.F - as.numeric(unlist(anc.summary.F[1,2])))
+
+# Anc24 - Evo24
+evo.DP24.F <- evo %>%
+  filter(evo_plot == "DP24") %>%
+  pull(flux.fru.pos)
+delta.DP24.F <- unlist(evo.DP24.F - as.numeric(unlist(anc.summary.F[1,2])))
+
+# Create data frame for analysis
+delta.F <- data.frame(flux = c(delta.DP0.F, delta.DP5.F, delta.DP24.F),
+  comp = c(rep("DP0", length(delta.DP0.F)), rep("DP5", length(delta.DP5.F)), 
+          rep("DP24", length(delta.DP24.F))))
+delta.F$comp <- factor(delta.F$comp, levels = c("DP0", "DP5", "DP24"))
+
+# Summarize deltas
+delta.summary.F <- delta.F %>%
+  group_by(comp) %>%
+  summarize(mean = mean(flux, na.rm = TRUE), sem = sem(flux))
+
+#   comp   mean   sem
+# 1 DP0    9.58 1.56 
+# 2 DP5    4.44 1.20 
+# 3 DP24   7.80 0.994
+
+# GLM without intercept: test whether groups of delta fluxes are different from zero
+delta.fit1 <- lm(flux ~ comp - 1, data = delta.F)
+summary(delta.fit1)
+
+# Coefficients:
+#       Estimate Std. Error t value Pr(>|t|)   
+# compDP0     9.578      1.274   7.521 2.18e-07 ***
+# compDP5     4.439      1.274   3.486  0.00221 ** 
+# compDP24    7.805      1.274   6.128 4.42e-06 ***
+
+# Residual standard error: 3.602 on 21 degrees of freedom
+# Multiple R-squared:  0.835,	Adjusted R-squared:  0.8114 
+# F-statistic: 35.42 on 3 and 21 DF,  p-value: 2.119e-08
+
+# Conclusion: fructose flux increased on all resource sizes during evolution
+
+
+# Acetate
+
+# Subtract flux of each evolved replicate from flux of average ancestor
+
+# Anc0 - Evo0
+evo.DP0.A <- evo %>%
+  filter(evo_plot == "DP0") %>%
+  pull(flux.ace.0)
+delta.DP0.A <- unlist(evo.DP0.A - as.numeric(unlist(anc.summary.A[1,2])))
+
+# Anc5 - Evo5
+evo.DP5.A <- evo %>%
+  filter(evo_plot == "DP5") %>%
+  pull(flux.ace.0)
+delta.DP5.A <- unlist(evo.DP5.A - as.numeric(unlist(anc.summary.A[1,2])))
+
+# Anc24 - Evo24
+evo.DP24.A <- evo %>%
+  filter(evo_plot == "DP24") %>%
+  pull(flux.ace.0)
+delta.DP24.A <- unlist(evo.DP24.A - as.numeric(unlist(anc.summary.A[1,2])))
+
+# Create data frame for analysis
+delta.A <- data.frame(flux = c(delta.DP0.A, delta.DP5.A, delta.DP24.A),
+  comp = c(rep("DP0", length(delta.DP0.A)), rep("DP5", length(delta.DP5.A)), 
+          rep("DP24", length(delta.DP24.A))))
+delta.A$comp <- factor(delta.A$comp, levels = c("DP0", "DP5", "DP24"))
+
+# Summarize deltas
+delta.summary.A <- delta.A %>%
+  group_by(comp) %>%
+  summarize(mean = mean(flux, na.rm = TRUE), sem = sem(flux))
+
+#   comp   mean   sem
+# 1 DP0    15.3  1.93
+# 2 DP5    10.0  1.56
+# 3 DP24   15.3  1.89
+
+# GLM without intercept: test whether groups of delta fluxes are different from zero
+delta.fit2 <- lm(flux ~ comp - 1, data = delta.A)
+summary(delta.fit2)
+
+# Coefficients:
+#       Estimate Std. Error t value Pr(>|t|)   
+# compDP0    15.305      1.801   8.498 3.09e-08 ***
+# compDP5    10.007      1.801   5.556 1.63e-05 ***
+# compDP24   15.312      1.801   8.501 3.07e-08 ***
+
+# Residual standard error: 5.094 on 21 degrees of freedom
+# Multiple R-squared:  0.8931,	Adjusted R-squared:  0.8778 
+# F-statistic: 58.45 on 3 and 21 DF,  p-value: 2.302e-10
+
+# Conclusion: acetate flux increased on all resource sizes during evolution
+
+
+
+# Lactate
+
+# Subtract flux of each evolved replicate from flux of average ancestor
+
+# Anc0 - Evo0
+evo.DP0.L <- evo %>%
+  filter(evo_plot == "DP0") %>%
+  pull(flux.lact.0)
+delta.DP0.L <- unlist(evo.DP0.L - as.numeric(unlist(anc.summary.L[1,2])))
+
+# Anc5 - Evo5
+evo.DP5.L <- evo %>%
+  filter(evo_plot == "DP5") %>%
+  pull(flux.lact.0)
+delta.DP5.L <- unlist(evo.DP5.L - as.numeric(unlist(anc.summary.L[1,2])))
+
+# Anc24 - Evo24
+evo.DP24.L <- evo %>%
+  filter(evo_plot == "DP24") %>%
+  pull(flux.lact.0)
+delta.DP24.L <- unlist(evo.DP24.L - as.numeric(unlist(anc.summary.L[1,2])))
+
+# Create data frame for analysis
+delta.L <- data.frame(flux = c(delta.DP0.L, delta.DP5.L, delta.DP24.L),
+  comp = c(rep("DP0", length(delta.DP0.L)), rep("DP5", length(delta.DP5.L)), 
+          rep("DP24", length(delta.DP24.L))))
+delta.L$comp <- factor(delta.L$comp, levels = c("DP0", "DP5", "DP24"))
+
+# Summarize deltas
+delta.summary.L <- delta.L %>%
+  group_by(comp) %>%
+  summarize(mean = mean(flux, na.rm = TRUE), sem = sem(flux))
+
+#   comp   mean   sem
+# 1 DP0    5.64  2.03
+# 2 DP5    2.65  1.25
+# 3 DP24   6.32  1.48
+
+# GLM without intercept: test whether groups of delta fluxes are different from zero
+delta.fit3 <- lm(flux ~ comp - 1, data = delta.L)
+summary(delta.fit3)
+
+# Coefficients:
+#       Estimate Std. Error t value Pr(>|t|) 
+# compDP0     5.642      1.620   3.482 0.002223 ** 
+# compDP5     2.646      1.620   1.633 0.117352    
+# compDP24    6.324      1.620   3.903 0.000819 ***
+
+# Residual standard error: 4.583 on 21 degrees of freedom
+# Multiple R-squared:  0.5885,	Adjusted R-squared:  0.5297 
+# F-statistic: 10.01 on 3 and 21 DF,  p-value: 0.0002673
+
+# Conclusion: except DP5, lactate flux increased on all resource sizes during evolution
+```
+
+
+## 4. Did the magnitude of flux evolution change with resource treatment? 
+
+```{r}
+
+# GLM with intercept: test if groups of delta fluxes are equal to each other
+
+# Fructose:
+
+delta.fit4 <- lm(flux ~ comp, data = delta.F)
+
+# Perform contrasts between each resource group
+contrast_DP0_DP5 <- contrast(delta.fit4, list(comp = "DP0"), list(comp = "DP5"))
+contrast_DP0_DP24 <- contrast(delta.fit4, list(comp = "DP0"), list(comp = "DP24"))
+contrast_DP5_DP24 <- contrast(delta.fit4, list(comp = "DP5"), list(comp = "DP24"))
+
+#               Contrast      S.E.    Lower     Upper     t     df  Pr(>|t|)
+#  DP0_DP5     5.13935    1.801056   1.393849   8.884851  2.85  21   0.0095
+#  DP0_D24     1.773765   1.801056  -1.971736   5.519266  0.98  21   0.3359
+#  DP5_DP24    -3.365585  1.801056  -7.111086  0.3799163 -1.87  21   0.0757
+
+# Conclusion: evolution of fructose flux depended on resource size
+# DP0 > DP5
+
+# Acetate:
+
+delta.fit5 <- lm(flux ~ comp, data = delta.A)
+
+# Perform contrasts between each resource group
+contrast_DP0_DP5 <- contrast(delta.fit5, list(comp = "DP0"), list(comp = "DP5"))
+contrast_DP0_DP24 <- contrast(delta.fit5, list(comp = "DP0"), list(comp = "DP24"))
+contrast_DP5_DP24 <- contrast(delta.fit5, list(comp = "DP5"), list(comp = "DP24"))
+
+#               Contrast      S.E.    Lower     Upper     t     df  Pr(>|t|)
+#  DP0_DP5     5.297966     2.547192  0.000790 10.59514  2.08   21     0.05
+#  DP0_D24    -0.006701859  2.547192 -5.303877  5.29047  0      21   0.9979
+#  DP5_DP24   -5.304668     2.547192 -10.60184 -0.00749 -2.08   21   0.0497
+
+# Conclusion: evolution of acetate flux depended on resource size
+# DP0 > DP5
+# DP24 > DP5
+
+
+# Lactate:
+
+delta.fit6 <- lm(flux ~ comp, data = delta.L)
+
+# Perform contrasts between each resource group
+contrast_DP0_DP5 <- contrast(delta.fit6, list(comp = "DP0"), list(comp = "DP5"))
+contrast_DP0_DP24 <- contrast(delta.fit6, list(comp = "DP0"), list(comp = "DP24"))
+contrast_DP5_DP24 <- contrast(delta.fit6, list(comp = "DP5"), list(comp = "DP24"))
+
+#               Contrast      S.E.    Lower     Upper     t     df  Pr(>|t|)
+#  DP0_DP5      2.996221    2.291482 -1.769177 7.761619  1.31   21   0.2052
+#  DP0_D24     -0.6818265   2.291482 -5.447224 4.083571 -0.3    21    0.769
+#  DP5_DP24   -3.678047     2.291482 -8.443445 1.087351 -1.61   21   0.1234
+
+# Conclusion: evolution of acetate flux did not depend on resource size
+```
+
+# Create metabolite flux figure (Fig. 4)
+
+```{r}
+# Start figure
+png(filename="~/GitHub/Bifidobacterium/figures/Fig.4.png",
+    width = 800, height = 1800, res = 96*2) 
+
+# Set up the layout for a 3-panel figure in a single column
+par(mfrow = c(3, 1),  # 3 rows, 1 column
+    oma = c(6, 4, 1, 1),  # Outer margins (bottom, left, top, right)
+    mar = c(2, 4, 2, 1))  # Inner margins for each plot
+
+# Plot fructose flux
+tomato1_rgb <- col2rgb("tomato")/255 
+
+evo.dp0.F <- plot(jitter(rep(1, length(evo.DP0.F)), amount = 0.1), 
+                evo.DP0.F, ylim = c(-0.5, 23), xlim = c(0.5, 3.5), 
+                pch = 19, col = rgb(tomato1_rgb[1], tomato1_rgb[2], 
+                tomato1_rgb[3], 0.5), cex = 1.7, yaxt = "n", xaxt = "n", 
+                cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+# Plot evolved flux (DP5)
+springgreen4_rgb <- col2rgb("springgreen4")/255 
+
+points(jitter(rep(2, length(evo.DP5.F)), amount = 0.1), 
+      evo.DP5.F, ylim = c(-0.5, 23), xlim = c(0.5, 3.5), pch = 19, 
+      col = rgb(springgreen4_rgb[1], springgreen4_rgb[2], 
+      springgreen4_rgb[3], 0.5), cex = 1.7, yaxt = "n", 
+      xaxt = "n", cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+# Plot evolved flux (DP24)
+cornflowerblue_rgb <- col2rgb("cornflowerblue")/255 
+
+points(jitter(rep(3, length(evo.DP24.F)), amount = 0.1), evo.DP24.F, 
+       ylim = c(-0.5, 23), xlim = c(0.5, 3.5), pch = 19, 
+       col = rgb(cornflowerblue_rgb[1], cornflowerblue_rgb[2], 
+       cornflowerblue_rgb[3], 0.5),cex = 1.7, yaxt = "n", xaxt = "n", 
+       cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+      
+box(lwd = 2)
+
+# Add means
+points(1, evo.summary.F[1,2], pch = 21, col = "white", 
+       bg = "tomato1", lwd = 1, cex = 2.5)  
+points(2, evo.summary.F[2,2], pch = 21, col = "white", 
+       bg = "springgreen4", lwd = 1, cex = 2.5)
+points(3, evo.summary.F[3,2], pch = 21, col = "white", 
+       bg = "cornflowerblue", lwd = 1, cex = 2.5)
+
+# Add SEMs
+arrows(x0 = 1, y0 = evo.summary.F[1,2], 
+       y1 = evo.summary.F[1,2] + evo.summary.F[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 1, y0 = evo.summary.F[1,2], 
+       y1 = evo.summary.F[1,2] - evo.summary.F[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 2, y0 = evo.summary.F[2,2], 
+       y1 = evo.summary.F[2,2] + evo.summary.F[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "springgreen4")
+
+arrows(x0 = 2, y0 = evo.summary.F[2,2], 
+       y1 = evo.summary.F[2,2] - evo.summary.F[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "springgreen4")
+
+arrows(x0 = 3, y0 = evo.summary.F[3,2], 
+       y1 = evo.summary.F[3,2] + evo.summary.F[3,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "cornflowerblue")
+
+arrows(x0 = 3, y0 = evo.summary.F[3,2], 
+       y1 = evo.summary.F[3,2] - evo.summary.F[3,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "cornflowerblue")
+
+# Add ancestral means
+segments(0.5, anc.summary.F[1,1], 3.5, anc.summary.F[1,1], col = "grey", 
+         lwd = 3, lty = 3, xpd = NA)
+
+# Add axes and labels
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.5, las = 1,
+     labels = c("0.0", "10", "20"), at = c(0, 10, 20))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0, 10, 20), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3), labels = F)
+
+text(2.75, 22, labels = "Fructose import", cex = 1.75)
+     
+# Plot acetate flux
+tomato1_rgb <- col2rgb("tomato")/255 
+
+evo.dp0.A <- plot(jitter(rep(1, length(evo.DP0.A)), amount = 0.1), 
+                evo.DP0.A, ylim = c(-0.5, 32), xlim = c(0.5, 3.5), 
+                pch = 19, col = rgb(tomato1_rgb[1], tomato1_rgb[2], 
+                tomato1_rgb[3], 0.5), cex = 1.7, yaxt = "n", xaxt = "n", 
+                cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+# Plot evolved flux (DP5)
+springgreen4_rgb <- col2rgb("springgreen4")/255 
+
+points(jitter(rep(2, length(evo.DP5.A)), amount = 0.1), 
+      evo.DP5.A, ylim = c(-0.5, 30), xlim = c(0.5, 3.5), pch = 19, 
+      col = rgb(springgreen4_rgb[1], springgreen4_rgb[2], 
+      springgreen4_rgb[3], 0.5), cex = 1.7, yaxt = "n", 
+      xaxt = "n", cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+# Plot evolved flux (DP24)
+cornflowerblue_rgb <- col2rgb("cornflowerblue")/255 
+
+points(jitter(rep(3, length(evo.DP24.A)), amount = 0.1), evo.DP24.A, 
+       ylim = c(-0.5, 32), xlim = c(0.5, 3.5), pch = 19, 
+       col = rgb(cornflowerblue_rgb[1], cornflowerblue_rgb[2], 
+       cornflowerblue_rgb[3], 0.5),cex = 1.7, yaxt = "n", xaxt = "n", 
+       cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+      
+box(lwd = 2)
+
+# Add means
+points(1, evo.summary.A[1,2], pch = 21, col = "white", 
+       bg = "tomato1", lwd = 1, cex = 2.5)  
+points(2, evo.summary.A[2,2], pch = 21, col = "white", 
+       bg = "springgreen4", lwd = 1, cex = 2.5)
+points(3, evo.summary.A[3,2], pch = 21, col = "white", 
+       bg = "cornflowerblue", lwd = 1, cex = 2.5)
+
+# Add SEMs
+arrows(x0 = 1, y0 = evo.summary.A[1,2], 
+       y1 = evo.summary.A[1,2] + evo.summary.A[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 1, y0 = evo.summary.A[1,2], 
+       y1 = evo.summary.A[1,2] - evo.summary.A[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 2, y0 = evo.summary.A[2,2], 
+       y1 = evo.summary.A[2,2] + evo.summary.A[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "springgreen4")
+
+arrows(x0 = 2, y0 = evo.summary.A[2,2], 
+       y1 = evo.summary.A[2,2] - evo.summary.A[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "springgreen4")
+
+arrows(x0 = 3, y0 = evo.summary.A[3,2], 
+       y1 = evo.summary.A[3,2] + evo.summary.A[3,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "cornflowerblue")
+
+arrows(x0 = 3, y0 = evo.summary.A[3,2], 
+       y1 = evo.summary.A[3,2] - evo.summary.A[3,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "cornflowerblue")
+
+# Add ancestral means
+segments(0.5, anc.summary.A[1,1], 3.5, anc.summary.A[1,1], col = "grey", 
+         lwd = 3, lty = 3, xpd = NA)
+
+# Add axes and labels
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.5, las = 1,
+     labels = c("0.0", "15", "30"), at = c(0, 15, 30))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0, 15, 30), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3), labels = F)
+text(2.8, 30, labels = "Acetate export", cex = 1.75)
+
+
+# Plot lactate flux
+tomato1_rgb <- col2rgb("tomato")/255 
+
+evo.dp0.L <- plot(jitter(rep(1, length(evo.DP0.L)), amount = 0.1), 
+                evo.DP0.L, ylim = c(-3, 20), xlim = c(0.5, 3.5), 
+                pch = 19, col = rgb(tomato1_rgb[1], tomato1_rgb[2], 
+                tomato1_rgb[3], 0.5), cex = 1.7, yaxt = "n", xaxt = "n", 
+                cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+# Plot evolved flux (DP5)
+springgreen4_rgb <- col2rgb("springgreen4")/255 
+
+points(jitter(rep(2, length(evo.DP5.L)), amount = 0.1), 
+      evo.DP5.L, ylim = c(-3, 20), xlim = c(0.5, 3.5), pch = 19, 
+      col = rgb(springgreen4_rgb[1], springgreen4_rgb[2], 
+      springgreen4_rgb[3], 0.5), cex = 1.7, yaxt = "n", 
+      xaxt = "n", cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+
+# Plot evolved flux (DP24)
+cornflowerblue_rgb <- col2rgb("cornflowerblue")/255 
+
+points(jitter(rep(3, length(evo.DP24.L)), amount = 0.1), evo.DP24.L, 
+       ylim = c(-3, 20), xlim = c(0.5, 3.5), pch = 19, 
+       col = rgb(cornflowerblue_rgb[1], cornflowerblue_rgb[2], 
+       cornflowerblue_rgb[3], 0.5),cex = 1.7, yaxt = "n", xaxt = "n", 
+       cex.lab = 2, cex.axis = 2, las = 1, ylab = "", xlab = "")
+      
+box(lwd = 2)
+
+# Add means
+points(1, evo.summary.L[1,2], pch = 21, col = "white", 
+       bg = "tomato1", lwd = 1, cex = 2.5)  
+points(2, evo.summary.L[2,2], pch = 21, col = "white", 
+       bg = "springgreen4", lwd = 1, cex = 2.5)
+points(3, evo.summary.L[3,2], pch = 21, col = "white", 
+       bg = "cornflowerblue", lwd = 1, cex = 2.5)
+
+# Add SEMs
+arrows(x0 = 1, y0 = evo.summary.L[1,2], 
+       y1 = evo.summary.L[1,2] + evo.summary.L[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 1, y0 = evo.summary.L[1,2], 
+       y1 = evo.summary.L[1,2] - evo.summary.L[1,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "tomato1")
+
+arrows(x0 = 2, y0 = evo.summary.L[2,2], 
+       y1 = evo.summary.L[2,2] + evo.summary.L[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "springgreen4")
+
+arrows(x0 = 2, y0 = evo.summary.L[2,2], 
+       y1 = evo.summary.L[2,2] - evo.summary.L[2,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "springgreen4")
+
+arrows(x0 = 3, y0 = evo.summary.L[3,2], 
+       y1 = evo.summary.L[3,2] + evo.summary.L[3,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "cornflowerblue")
+
+arrows(x0 = 3, y0 = evo.summary.L[3,2], 
+       y1 = evo.summary.L[3,2] - evo.summary.L[3,3], 
+       angle = 90, length = 0.1, lwd = 2, col = "cornflowerblue")
+
+# Add ancestral means
+segments(0.5, anc.summary.L[1,1], 3.5, anc.summary.L[1,1], col = "grey", 
+         lwd = 3, lty = 3, xpd = NA)
+
+# Add axes and labels
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.5, las = 1,
+     labels = c("0.0", "10", "20"), at = c(0, 10, 20))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0, 10, 20), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.5, las = 1,
+     labels = c("DP0", "DP5", "DP24"), 
+     col.axis = "black", at = c(1, 2, 3))
+text(2.8, 19, labels = "Lactate export", cex = 1.75)
+
+# Add axes titles
+mtext(expression("Metabolite flux" ~ (fmol ~ cell^{-1} ~ h^{-1})), 
+      side = 2, outer = TRUE, cex = 1.5, line = 1, adj = 0.5)
+
+mtext(expression('Resource size'), side = 1, outer = TRUE, cex = 1.5, 
+      line = 3.5, adj = 0.6)
+
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("~/GitHub/Bifidobacterium/figures/Fig.4.png")
+grid.raster(img)
+```
