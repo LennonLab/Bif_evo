@@ -30,7 +30,6 @@ require("ggrepel");
 require("gridExtra")
 require("contrast")
 require("vegan")
-require("indicspecies")
 sem <- function(x) sqrt(var(x)/length(x))
 cv <- function(x) (sd(x)/mean(x))*100
 ```
@@ -284,35 +283,5 @@ TukeyHSD(compare.variance)
 # G-F24-F    -0.148452913 -0.2611923 -0.03571357 0.0087699 (DP24 vs. DP0)
 # G-F5-F     -0.138584451 -0.2513238 -0.02584511 0.0144279 (DP5 vs. DP0)
 # G-F5-G-F24  0.009868462 -0.1028709  0.12260780 0.9735548 (DP5 vs. DP24)
-```
-
-# Peform indicator gene analysis
-
-```{r}
-trts.i <- c("F", "F", "F", "F", "F", "F", "F", "F",
-          "G-F5", "G-F5", "G-F5", "G-F5", "G-F5", "G-F5", "G-F5", "G-F5", 
-          "G-F24", "G-F24", "G-F24", "G-F24", "G-F24", "G-F24", "G-F24", "G-F24")
-gxp.i <- gxp.signif
-indvals <- multipatt(x = gxp.i, cluster = trts.i, func = "IndVal.g", control = how(nperm = 999))
-summary(indvals, indvalcomp = TRUE)
-# Component A: "specificity" or "positive predictive value" of the species as indicator of the site group. 
-# It is the sample estimate of the probability that the surveyed site belongs to the target site group given the fact that the species has been found.
-# Component B: "Fidelity" or "sensitivity" of the species as indicator of the target site group. It is is sample estimate of the probability of finding the species in sites belonging to the site group.
-
-gxpcomb <- combinespecies(gxp.i, max.order = 2)$XC
-dim(gxpcomb)
-indvalcomb <- multipatt(x = gxpcomb, cluster = trts.i, duleg = TRUE,control = how(nperm = 999))
-summary(indvalcomb, indvalcomp = TRUE)
-
-####This is using the whole matrix instead of specifically the significant genes:
-gxpa.i <- gxp.all
-indval <- multipatt(x = gxpa.i, cluster = trts.i,func = "IndVal.g", control = how(nperm = 999))
-summary(indval, indvalcomp = TRUE)
-
-gxpacomb <- combinespecies(gxpa.i, max.order = 2)$XC
-dim(gxpacomb)
-indvalacomb <- multipatt(x = gxpacomb, cluster = trts.i, duleg = TRUE,control = how(nperm = 999))
-summary(indvalacomb, indvalcomp = TRUE)
-#I just commented out the 2 above lines so that the whole script runs faster when I run it to declare my variables
 ```
 
